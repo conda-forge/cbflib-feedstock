@@ -12,7 +12,7 @@ index e9d9183..11d7ddb 100644
  #                                                                    #
  #                          Paul Ellis and                            #
  #         Herbert J. Bernstein (yaya@bernstein-plus-sons.com)        #
-@@ -252,1416 +250,2767 @@
+@@ -252,1416 +250,2769 @@
  #  CMakeLists.txt for CBFlib                                         #
  #                                                                    #
  #  Assumed directory structure                                       #
@@ -559,9 +559,11 @@ index e9d9183..11d7ddb 100644
 +endif()
 +
 +
-+add_executable(h5dump IMPORTED)
-+set_target_properties(h5dump PROPERTIES
-+  IMPORTED_LOCATION "${_h5dump_executable}")
++if(NOT TARGET h5dump)
++  add_executable(h5dump IMPORTED)
++  set_target_properties(h5dump PROPERTIES
++    IMPORTED_LOCATION "${_h5dump_executable}")
++endif()
 +
 +
 +# CBFlib must be compiled with H5_USE_110_API.  With MSVC, also need
