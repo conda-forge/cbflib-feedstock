@@ -1,5 +1,5 @@
 {% set name = "CBFlib" %}
-{% set version = "0.9.7" %}
+{% set version = "0.9.8" %}
 
 package:
   name: {{ name|lower }}
@@ -8,7 +8,7 @@ package:
 source:
   - url: https://github.com/yayahjb/cbflib/archive/refs/tags/CBFlib-{{ version }}.tar.gz
     folder: cbflib
-    sha256: e4acf8f7b5cc4e788215983ff428c2f8aa1fdbbfc6d163ace7999dcd2a10b19f
+    sha256: 81d8ea4b75ba2cab7f94a6b20a32b8ca099405a073201776c64064b64c7a4d30
     patches:
       - 01-off-by-one.patch
       - 02-overrun.patch
@@ -24,12 +24,12 @@ source:
       - 12-msvc.patch
       - 13-warnings.patch
   - url: http://downloads.sf.net/cbflib/CBFlib_{{ version }}_Data_Files_Input.tar.gz
-    sha256: 5d9eac1adb1a49dbc3a65455cd631e3a1849fe3c07301e5ec8be9f3c42da8025
+    sha256: a13d6f740a12dd7380e451ce4107c0f07abd2d6795c9cb261ac5bb5f50fa680b
     folder: data-input
     patches:
       - cbflib-data-input-{{ version }}.patch
   - url: http://downloads.sf.net/cbflib/CBFlib_{{ version }}_Data_Files_Output.tar.gz
-    sha256: 06c9e98410b39c5f40cfce62a940857172d5914b172dca8cf15a69b330d6fec6
+    sha256: 565338960af638263a26525f43f3d791a75a8bf55599f12809547f66830b913f
     folder: data-output
     patches:
       - cbflib-data-output-{{ version }}.patch
@@ -39,7 +39,7 @@ build:
     - {{ compiler('cxx') }}
     - {{ stdlib('c') }}      # [win]
     - libtiff
-  number: 3
+  number: 0
 
 requirements:
   build:
