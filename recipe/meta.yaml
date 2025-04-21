@@ -39,7 +39,7 @@ build:
     - {{ compiler('cxx') }}
     - {{ stdlib('c') }}      # [win]
     - libtiff
-  number: 3
+  number: 4
 
 requirements:
   build:
