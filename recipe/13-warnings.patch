@@ -1,3 +1,5 @@
+https://github.com/dials/cbflib/pull/96
+https://github.com/dials/cbflib/pull/99
 --- a/examples/cbf2adscimg_sub.c
 +++ b/examples/cbf2adscimg_sub.c
 @@ -154,7 +154,8 @@
@@ -43,7 +45,7 @@
  
 --- a/examples/cbf2nexus.c
 +++ b/examples/cbf2nexus.c
-@@ -764,7 +764,7 @@
+@@ -765,7 +765,7 @@
  	}
  
  	/* Cleanup */
@@ -60,13 +62,13 @@
                  if (outarray[ii][jj] != XFEL_UNDEFINED
 -                    && outarray[ii][jj] != XFEL_OVERLOAD);
 +                    && outarray[ii][jj] != XFEL_OVERLOAD)
-+                        ;
++                    ;
                  intoutarray[ii][jj] = (int)(outarray[ii][jj]+0.5);
              }
          }
 --- a/examples/changtestcompression.c
 +++ b/examples/changtestcompression.c
-@@ -120,7 +120,7 @@
+@@ -119,7 +119,7 @@
      uldata = (unsigned long *)calloc(nelem, sizeof(long));
      elsize = sizeof(long);
      while (i < nelem) {
@@ -75,7 +77,7 @@
        i += 1 + urand() * NSTEPS;
      }
      *data = uldata;
-@@ -129,7 +129,7 @@
+@@ -128,7 +128,7 @@
      sldata = (signed long *)calloc(nelem, sizeof(long));
      elsize = sizeof(long);
      while (i < nelem) {
@@ -84,7 +86,7 @@
        i += 1 + urand() * NSTEPS;
      }
      *data = sldata;
-@@ -139,7 +139,7 @@
+@@ -138,7 +138,7 @@
      ulldata = (unsigned long long *)calloc(nelem, sizeof(long long));
      elsize = sizeof(long long);
      while (i < nelem) {
@@ -93,7 +95,7 @@
        i += 1 + urand() * NSTEPS;
      }
      *data = ulldata;
-@@ -148,7 +148,7 @@
+@@ -147,7 +147,7 @@
      slldata = (signed long long *)calloc(nelem, sizeof(long long));
      elsize = sizeof(long long);
      while (i < nelem) {
@@ -104,7 +106,7 @@
      *data = slldata;
 --- a/examples/cif2cbf.c
 +++ b/examples/cif2cbf.c
-@@ -1926,8 +1926,8 @@
+@@ -1927,8 +1927,8 @@
                                              free(array);
                                          } else {
                                              fprintf(stderr,
@@ -115,7 +117,7 @@
                                              exit(1);
                                          }
                                      }
-@@ -2473,8 +2473,8 @@
+@@ -2474,8 +2474,8 @@
                                          free(array);
                                      } else {
                                          fprintf(stderr,
@@ -126,7 +128,7 @@
                                          exit(1);
                                      }
                                  }
-@@ -2600,8 +2600,8 @@
+@@ -2601,8 +2601,8 @@
                                                  free(array);
                                              } else {
                                                  fprintf(stderr,
@@ -137,7 +139,7 @@
                                                  exit(1);
                                              }
                                          }
-@@ -2818,8 +2818,8 @@
+@@ -2819,8 +2819,8 @@
                                          free(array);
                                      } else {
                                          fprintf(stderr,
@@ -148,7 +150,7 @@
                                          exit(1);
                                      }
                                  }
-@@ -2945,8 +2945,8 @@
+@@ -2946,8 +2946,8 @@
                                                  free(array);
                                              } else {
                                                  fprintf(stderr,
@@ -161,7 +163,7 @@
                                          }
 --- a/examples/convert_image.c
 +++ b/examples/convert_image.c
-@@ -316,7 +316,6 @@
+@@ -317,7 +317,6 @@
  
  
  
@@ -171,7 +173,7 @@
  
 --- a/examples/convert_minicbf.c
 +++ b/examples/convert_minicbf.c
-@@ -327,7 +327,6 @@
+@@ -328,7 +328,6 @@
  #endif
  
  int outusage ( void );
@@ -181,7 +183,49 @@
  
 --- a/examples/dps_peaksearch.c
 +++ b/examples/dps_peaksearch.c
-@@ -139,12 +139,16 @@
+@@ -84,14 +84,13 @@
+ }
+ 
+ 
+-#if defined (__linux__)||defined(sun)
++#if defined(sun)
+ /* Round a double to an integer */
+ 
+ 
+ /* Calculate sin() and cos(). */
+-void
+-sincos(x, s, c)
+-double x, *s, *c;
++static void
++sincos(double x, double *s, double *c)
+ {
+     *s = sin(x);
+     *c = cos(x);
+@@ -102,9 +101,8 @@
+ 
+ 
+ /* Calculate sin() and cos(). */
+-void
+-sincos(x, s, c)
+-double x, *s, *c;
++static void
++sincos(double x, double *s, double *c)
+ {
+     *s = sin(x);
+     *c = cos(x);
+@@ -112,9 +110,8 @@
+ 
+ 
+ /* Round a double to an integer */
+-double
+-rint(x)
+-register double x;
++static double
++rint(register double x)
+ {
+     if (x == (int)x)
+         return(x);
+@@ -139,12 +136,16 @@
   *
   */
  
@@ -192,19 +236,19 @@
 -double *cm_x, *cm_y;
 -int cm_nx, cm_ny;
 +static void
-+cmass (register unsigned short *idata,
-+       int iwidth,
-+       int iheight,
-+       int x,
-+       int y,
-+       double *cm_x,
-+       double *cm_y,
-+       int cm_nx,
-+       int cm_ny)
++cmass(register unsigned short *idata,
++      int iwidth,
++      int iheight,
++      int x,
++      int y,
++      double *cm_x,
++      double *cm_y,
++      int cm_nx,
++      int cm_ny)
  {
      register int i, j, val;
      double sum_x=0, sum_y=0, sum_z=0.0;
-@@ -205,6 +209,9 @@
+@@ -205,6 +206,9 @@
  
  static	int	ccd_image_saturation = 0;
  
@@ -214,7 +258,7 @@
  int dps_peaksearch(unsigned short *data, int nx, int ny,
                     int npeaks_out, double min_isigma,
                     int min_spacing, DPS_Peak *pptr, int min_value)
-@@ -231,7 +238,6 @@
+@@ -231,7 +235,6 @@
      int overload = 55000;
      int npeaks=0;
      int maxpeaks=20480;
@@ -222,7 +266,7 @@
      int nover;
      int nunder;
      int	nxfer;
-@@ -488,9 +494,11 @@
+@@ -488,9 +491,11 @@
  /* Sort pixel value
   */
  int
@@ -238,7 +282,7 @@
      else
 --- a/examples/minicbf2nexus.c
 +++ b/examples/minicbf2nexus.c
-@@ -607,7 +607,7 @@
+@@ -604,7 +604,7 @@
  	}
      
  	/* Cleanup */
@@ -284,17 +328,6 @@
  #include "cbf.h"
  #include "cbf_simple.h"
  
---- a/examples/tif_sprint.c
-+++ b/examples/tif_sprint.c
-@@ -451,7 +451,7 @@
- 		     cp = strchr(cp,'\0')+1, i--) {
- 			size_t max_chars = 
- 				inknameslen - (cp - inknames);
--            chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0),sep);
-+            chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%s", sep);
-             chars_used += _TIFFsnprintAsciiBounded(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), cp, max_chars);
- 			sep = ", ";
- 		}
 --- a/src/cbf_codes.c
 +++ b/src/cbf_codes.c
 @@ -875,7 +875,7 @@
@@ -308,7 +341,7 @@
                  
 --- a/src/cbf_hdf5.c
 +++ b/src/cbf_hdf5.c
-@@ -1024,12 +1024,12 @@
+@@ -1018,12 +1018,12 @@
          } else {
              const unsigned int idx = obj->count++;
              int error = CBF_SUCCESS;
@@ -324,7 +357,7 @@
              if (CBF_SUCCESS == error) {
                  obj->axis_set_id[idx] = axis_set_id;
                  obj->path[idx] = _cbf_strdup(path);
-@@ -1112,8 +1112,8 @@
+@@ -1106,8 +1106,8 @@
          } else {
              int error = CBF_SUCCESS;
              const unsigned int idx = obj->count++;
@@ -335,7 +368,16 @@
              if (!(obj->in_degree = realloc(obj->in_degree,obj->count*sizeof(unsigned int*)))) error |= CBF_ALLOC;
              if (!(obj->depends_on = realloc(obj->depends_on,obj->count*sizeof(unsigned int*)))) error |= CBF_ALLOC;
              if (CBF_SUCCESS == error) {
-@@ -4356,7 +4356,7 @@
+@@ -4179,7 +4179,7 @@
+ 
+      \return Nothing.
+      */
+-    void cbf_config_free(const cbf_config_t * vector)
++    void cbf_config_free(const cbf_config_t * const vector)
+     {
+         if (vector) {
+         const cbf_configItem_t * it = vector->item;
+@@ -4350,7 +4350,7 @@
  CBFM_PROLOG { \
  const char * const _tkn = (TKN); \
  if (strcmp(_tkn,*buf)) { \
@@ -344,7 +386,7 @@
      return cbf_configError_unexpectedInput; \
  } \
  } CBFM_EPILOG
-@@ -4364,7 +4364,7 @@
+@@ -4358,7 +4358,7 @@
  #define REQUIRE_NOT_EOL() \
  CBFM_PROLOG { \
  if (!strcmp("\n",*buf)) { \
@@ -353,7 +395,7 @@
      return cbf_configError_unexpectedInput; \
  } \
  } CBFM_EPILOG
-@@ -4378,7 +4378,7 @@
+@@ -4372,7 +4372,7 @@
          errno = 0;
          it->vector[0] = strtod(*buf, &end);
          if (errno != 0 || end == *buf) {
@@ -362,7 +404,7 @@
              return cbf_configError_expectedNumber;
          }
          GET_TOKEN();
-@@ -4386,7 +4386,7 @@
+@@ -4380,7 +4380,7 @@
          errno = 0;
          it->vector[1] = strtod(*buf, &end);
          if (errno != 0 || end == *buf) {
@@ -371,7 +413,7 @@
              return cbf_configError_expectedNumber;
          }
          GET_TOKEN();
-@@ -4394,7 +4394,7 @@
+@@ -4388,7 +4388,7 @@
          errno = 0;
          it->vector[2] = strtod(*buf, &end);
          if (errno != 0 || end == *buf) {
@@ -380,7 +422,7 @@
              return cbf_configError_expectedNumber;
          }
          /* literal ']'. */
-@@ -4443,7 +4443,7 @@
+@@ -4437,7 +4437,7 @@
  CBFM_PROLOG { \
  const char * const _tkn = (TKN); \
  if (strcmp(_tkn,tkn)) { \
@@ -389,7 +431,7 @@
  return cbf_configError_unexpectedInput; \
  } \
  } CBFM_EPILOG
-@@ -4451,7 +4451,7 @@
+@@ -4445,7 +4445,7 @@
  #define REQUIRE_EOL() \
  CBFM_PROLOG { \
  if (strcmp("\n",tkn)) { \
@@ -398,7 +440,7 @@
  return cbf_configError_unexpectedInput; \
  } \
  } CBFM_EPILOG
-@@ -4459,7 +4459,7 @@
+@@ -4453,7 +4453,7 @@
  #define REQUIRE_NOT_EOL() \
  CBFM_PROLOG { \
  if (!strcmp("\n",tkn)) { \
@@ -407,7 +449,7 @@
  return cbf_configError_unexpectedInput; \
  } \
  } CBFM_EPILOG
-@@ -4467,7 +4467,7 @@
+@@ -4461,7 +4461,7 @@
  #define REQUIRE_NEXUS_AXIS() \
  CBFM_PROLOG { \
  if (strcmp(".",tkn) && cbf_config_end(vec) == cbf_config_findNexus(vec,tkn)) { \
@@ -416,7 +458,7 @@
  return cbf_configError_undefinedValue; \
  } \
  } CBFM_EPILOG
-@@ -4492,7 +4492,7 @@
+@@ -4486,7 +4486,7 @@
                  REQUIRE_NOT_EOL();
                  it = cbf_config_findMinicbf(vec,tkn);
                  if (cbf_config_end(vec) != it) {
@@ -425,7 +467,7 @@
                      return cbf_configError_duplicateField;
                  }
                  it = cbf_config_push(vec,cbf_configItem_create());
-@@ -4505,7 +4505,7 @@
+@@ -4499,7 +4499,7 @@
                  GET_TOKEN();
                  REQUIRE_NOT_EOL();
                  if (cbf_config_end(vec) != cbf_config_findNexus(vec,tkn)) {
@@ -434,7 +476,7 @@
                      return cbf_configError_duplicateField;
                  }
                  it->nexus = _cbf_strdup(tkn);
-@@ -4530,7 +4530,7 @@
+@@ -4524,7 +4524,7 @@
                  /* find entry by nexus axis name */
                  cbf_configItem_t * const it = cbf_config_findNexus(vec,tkn);
                  if (cbf_config_end(vec) == it) {
@@ -443,7 +485,7 @@
                      return cbf_configError_undefinedValue;
                  }
                  /* match depends-on -> vector OR vector -> depends-on. */
-@@ -17993,7 +17993,7 @@
+@@ -17987,7 +17987,7 @@
          buffer[0] = '\0';
  
          strncat(buffer,verstring,50);
@@ -452,7 +494,7 @@
              if (svnrev[ii] == '$' || svnrev[ii] == ' ') {
                  svnrev[ii] = '\0';
              } else break;
-@@ -18022,9 +18022,9 @@
+@@ -18016,9 +18016,9 @@
              }
          }
  
@@ -464,7 +506,7 @@
          strncat(buffer,svndate+idate,50);
          CBF_CALL(cbf_H5Arequire_string((*h5handle)->hfile,"creator_version", 
              buffer));
-@@ -18075,7 +18075,7 @@
+@@ -18069,7 +18069,7 @@
          buffer[0] = '\0';
  
          strncat(buffer,verstring,50);
@@ -473,7 +515,7 @@
              if (svnrev[ii] == '$' || svnrev[ii] == ' ') {
                  svnrev[ii] = '\0';
              } else break;
-@@ -18104,9 +18104,9 @@
+@@ -18098,9 +18098,9 @@
              }
          }
  
@@ -485,7 +527,7 @@
          strncat(buffer,svndate+idate,50);
          CBF_CALL(cbf_H5Arequire_string((*h5handle)->hfile,"creator_version",
                                         buffer));
-@@ -19270,7 +19270,7 @@
+@@ -19264,7 +19264,7 @@
                                      cbf_debug_print("invalid dimensions of dataset");
                                      error |= CBF_SIZE;
                                  } else {
@@ -494,7 +536,7 @@
                                      hid_t vlstr = CBF_H5FAIL;
                                      const hid_t currType = H5Dget_type(object);
                                      hsize_t offset[1];
-@@ -22445,9 +22445,9 @@
+@@ -22438,9 +22438,9 @@
                                                  const int n = snprintf(
                                                                         _data_encoding,
                                                                         _data_encoding_size,
@@ -506,7 +548,7 @@
                                                                         );
                                                  /* check if the string was formed successfully */
                                                  if (n > -1 && n < (ssize_t)_data_encoding_size) break;
-@@ -24423,9 +24423,9 @@
+@@ -24416,9 +24416,9 @@
          if (!c) {
              error |= CBF_ARGUMENT;
          } else {
@@ -518,7 +560,7 @@
              if (!new_axis_id) {
                  error |= CBF_ALLOC;
              } else {
-@@ -24747,9 +24747,9 @@
+@@ -24740,9 +24740,9 @@
          if (!c) {
              error |= CBF_ARGUMENT;
              } else {
@@ -530,7 +572,7 @@
              if (!new_axis_id) {
                  error |= CBF_ALLOC;
              } else {
-@@ -26842,7 +26842,7 @@
+@@ -26835,7 +26835,7 @@
                                          const char * * newAxes = NULL;
                                          /* axis id wasn't found in the set - add it */
                                          ++nAxes;
@@ -586,7 +628,7 @@
                      } else {
 -                        if ((((long)delta[0]>>32)&0xFFFFFFFFL)==0x80000000L&&(((long)delta[0]&0xFFFFFFFFl)==0L)) {
 +                        int64_t ldelta = delta[0];
-+                        if (((ldelta>>32)&0xFFFFFFFFL)==0x80000000L&&((ldelta&0xFFFFFFFFl)==0L)) {
++                        if (((ldelta>>32)&0xFFFFFFFFL)==0x80000000L&&((ldelta&0xFFFFFFFFL)==0L)) {
                              prevmode=curmode;
                              nextmode = 0;
                          } else {

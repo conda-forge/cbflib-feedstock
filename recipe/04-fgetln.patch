@@ -1,12 +1,34 @@
+https://github.com/dials/cbflib/pull/93
 --- a/examples/cbf_standardize_numbers.c
 +++ b/examples/cbf_standardize_numbers.c
-@@ -15,7 +16,9 @@
+@@ -15,7 +15,11 @@
  #include <string.h>
  
  
+-char * fgetln(FILE *, size_t *);
 +#ifndef HAVE_FGETLN
- char * fgetln(FILE *, size_t *);
++#    define fgetln _cbf_fgetln
++char *
++_cbf_fgetln(FILE *stream, size_t *len);
 +#endif
  
  void usage ( void ) {
      
+--- a/src/fgetln.c
++++ b/src/fgetln.c
+@@ -31,9 +31,8 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
+-#ifndef HAVE_fgetln
+ char *
+-fgetln(FILE *stream, size_t *len)
++_cbf_fgetln(FILE *stream, size_t *len)
+ {
+   static char *buf = NULL;
+   static size_t buflen = 0;
+@@ -63,4 +62,3 @@
+   *len = strlen(buf);
+   return buf;
+ }
+-#endif /* !defined(HAVE_fgetln) */

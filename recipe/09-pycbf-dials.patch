@@ -1,289 +1,19 @@
-Taken from DIALS's pycbf, in particular:
+https://github.com/dials/cbflib/pull/87
+https://github.com/dials/cbflib/pull/94
 
-  https://github.com/dials/pycbf/blob/main/swig/make_pycbf.py
-  https://github.com/dials/pycbf/blob/main/swig/pycbf.i
-  https://github.com/dials/pycbf/blob/main/tests/test_1.py
-  https://github.com/dials/pycbf/blob/main/tests/test_4.py
-  https://github.com/dials/pycbf/blob/main/src/pycbf/__init__.py
-  https://github.com/dials/pycbf/blob/main/src/pycbf/utils.py
+Need to manually remove pycbf/_pycbf.pyd on Windows.
 --- a/pycbf/make_pycbf.py
 +++ b/pycbf/make_pycbf.py
-@@ -1,3 +1,4 @@
-+#!/usr/bin/env python3
+@@ -56,7 +56,7 @@
  
- print("\\begin{verbatim}")
- print("This output comes from make_pycbf.py which generates the wrappers")
-@@ -54,9 +55,42 @@ print("pycbf Copyright (C) 2005  Jonathan Wright, no warranty, LGPL")
- #                                                                    #
- ######################################################################
  
--
--# Get the ascii text as a list of strings 
+ # Get the ascii text as a list of strings 
 -lines = open("CBFlib.txt","r").readlines()
-+import argparse
-+import sys
-+from pathlib import Path
-+
-+# Look for CBFlib.txt
-+candidate_cbflib = Path(__file__).parent.parent / "cbflib" / "pycbf" / "CBFlib.txt"
-+if not candidate_cbflib.is_file():
-+    candidate_cbflib = None
-+
-+parser = argparse.ArgumentParser(description="Regenerate pycbf SWIG bindings")
-+parser.add_argument(
-+    "cbflib_txt",
-+    help="Path to CBFlib.txt file. Defaults to bundled cbflib.",
-+    nargs="?",
-+    type=Path,
-+    default=candidate_cbflib,
-+)
-+parser.add_argument(
-+    "-o",
-+    help="Output Folder. Defaults to same location as this script.",
-+    default=Path(__file__).parent,
-+    type=Path,
-+    dest="output",
-+)
-+
-+args = parser.parse_args()
-+
-+if not args.cbflib_txt:
-+    sys.exit("Error: could not find default CBFlib.txt, please provide path")
-+if not args.cbflib_txt.is_file():
-+    sys.exit(f"Error: Could {args.cbflib_doc} appears not to be a valid file")
-+
-+print(f"Generating SWIG wrappers from {args.cbflib_txt}")
-+
-+# Get the ascii text as a list of strings
-+lines = args.cbflib_txt.read_text().splitlines()
++lines = open("CBFlib.txt","r",encoding="utf-8").readlines()
  
  # Variables to hold the useful things we find in the file
  docstring = "\n"
-@@ -136,6 +170,18 @@ while i<len(lines)-1:
- 
- # End of CBFlib.txt file - now generate wrapper code for swig
- 
-+# Inject functions directly, bypassing the "write to CBFlib.html" stage
-+name_dict["cbf_read_buffered_file"] = [
-+    "int cbf_read_buffered_file (cbf_handle handle, FILE *stream, int flags, const char * buffer, size_t buffer_len)",
-+    """
-+Read from a bytes buffer instead of a file.
-+
-+Args:
-+   buffer (bytes): The python bytes-buffer to read from.
-+   flags (int): Same meaning as for read_file
-+""",
-+]
-+
- 
- def myformat(s,l,indent=0,breakon=" "):
-    """
-@@ -481,9 +527,7 @@ cbfhandle_specials = {
- 
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_integerarray_as_string;
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
-+
- // Get the length correct
- 
-     void get_integerarray_as_string(char **s, int *slen){
-@@ -513,9 +557,7 @@ cbfhandle_specials = {
- 
- "cbf_get_image":["""
- // Ensure we free the local temporary
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
-+
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_image_as_string;
- // Get the length correct
-@@ -542,9 +584,7 @@ cbfhandle_specials = {
- 
- "cbf_get_image_fs":["""
- // Ensure we free the local temporary
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
-+
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_image_fs_as_string;
- // Get the length correct
-@@ -571,9 +611,7 @@ cbfhandle_specials = {
- 
- "cbf_get_image_sf":["""
- // Ensure we free the local temporary
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
-+
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_image_fs_as_string;
- // Get the length correct
-@@ -600,9 +638,7 @@ cbfhandle_specials = {
- 
- "cbf_get_real_image":["""
- // Ensure we free the local temporary
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
-+
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_real_image_as_string;
- // Get the length correct
-@@ -629,9 +665,7 @@ cbfhandle_specials = {
- 
- "cbf_get_real_image_fs":["""
- // Ensure we free the local temporary
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
-+
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_real_image_fs_as_string;
- // Get the length correct
-@@ -658,9 +692,7 @@ cbfhandle_specials = {
- 
- "cbf_get_real_image_sf":["""
- // Ensure we free the local temporary
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
-+
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_real_image_sf_as_string;
- // Get the length correct
-@@ -687,9 +719,7 @@ cbfhandle_specials = {
- 
- "cbf_get_3d_image":["""
- // Ensure we free the local temporary
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
-+
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_3d_image_as_string;
- // Get the length correct
-@@ -716,9 +746,7 @@ cbfhandle_specials = {
- 
- "cbf_get_3d_image_fs":["""
- // Ensure we free the local temporary
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
-+
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_3d_image_fs_as_string;
- // Get the length correct
-@@ -747,9 +775,6 @@ cbfhandle_specials = {
- // Ensure we free the local temporary
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_3d_image_sf_as_string;
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
- 
- // Get the length correct
- 
-@@ -777,9 +802,6 @@ cbfhandle_specials = {
- // Ensure we free the local temporary
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_real_3d_image_as_string;
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
- 
- // Get the length correct
- 
-@@ -805,9 +827,7 @@ cbfhandle_specials = {
- 
- "cbf_get_real_3d_image_fs":["""
- // Ensure we free the local temporary
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
-+
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_real_3d_image_fs_as_string;
- // Get the length correct
-@@ -833,9 +853,7 @@ cbfhandle_specials = {
- 
- "cbf_get_real_3d_image_sf":["""
- // Ensure we free the local temporary
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
-+
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_real_3d_image_sf_as_string;
- 
-@@ -863,9 +881,7 @@ cbfhandle_specials = {
- 
- "cbf_get_realarray":["""
- // Ensure we free the local temporary
--%{
--#define SWIG_PYTHON_STRICT_BYTE_CHAR
--%}
-+
- %cstring_output_allocate_size(char ** s, int *slen, free(*$1))
-        get_realarray_as_string;
- // Get the length correct
-@@ -1637,7 +1653,7 @@ cbfhandle_specials = {
- 
- 
- "cbf_write_file" : ["""
--    void write_file(char* filename, int ciforcbf, int headers, 
-+    void write_file(const char* filename, int ciforcbf, int headers,
-                     int encoding){
-        FILE *stream;
-        int readable;
-@@ -1657,7 +1673,7 @@ cbfhandle_specials = {
- 
- 
- "cbf_write_widefile" : ["""
--    void write_widefile(char* filename, int ciforcbf, int headers, 
-+    void write_widefile(const char* filename, int ciforcbf, int headers,
-                     int encoding){
-        FILE *stream;
-        int readable;
-@@ -1705,9 +1721,34 @@ cbfhandle_specials = {
-     }
-        }
- ""","read_file",["String filename","Integer headers"],[],],
-+    "cbf_read_buffered_file": [
-+        """
-+    %exception read_buffer {
-+        $function
-+        if (PyErr_Occurred()) {
-+            return NULL;
-+        }
-+    }
-+
-+    void read_buffer(PyObject *buffer, int flags = 0) {
-+        if (!PyBytes_Check(buffer)) {
-+            PyErr_SetString(PyExc_ValueError, "buffer must be a bytes-like object");
-+        }
- 
-+        Py_ssize_t buffer_length = PyBytes_Size(buffer);
-+        char *cbuffer = PyBytes_AsString(buffer);
- 
-+        int err = cbf_read_buffered_file(self, NULL /*nullptr*/, flags, cbuffer, buffer_length);
- 
-+        if (err) {
-+            PyErr_Format(PyExc_RuntimeError, "cbflib read_file returned error %d", err);
-+        }
-+    }
-+""",
-+        "read_buffer",
-+        ["Bytes object", "Integer Flags"],
-+        [],
-+    ],
- "cbf_read_widefile" : ["""
-     void read_widefile(char* filename, int headers){
-        /* CBFlib needs a stream that will remain open 
-@@ -3406,11 +3447,23 @@ def generate_wrappers(name_dict):
+@@ -3406,11 +3406,11 @@
  
  
  generate_wrappers(name_dict)
@@ -292,328 +22,456 @@ Taken from DIALS's pycbf, in particular:
 -open("cbfpositionerwrappers.i","w").write(cbf_positioner_wrapper.get_code())
 -open("cbfhandlewrappers.i","w").write(cbf_handle_wrapper.get_code())
 -open("cbfgenericwrappers.i","w").write(generic_wrapper.get_code())
-+header = """
-+// THIS FILE IS AUTOGENERATED BY make_pycbf.py
-+//
-+// DO NOT MAKE CHANGES DIRECTLY TO THIS FILE
-+
-+""".lstrip()
-+
-+for name, wrapper in {
-+    "cbfgoniometerwrappers": cbf_goniometer_wrapper,
-+    "cbfdetectorwrappers": cbf_detector_wrapper,
-+    "cbfpositionerwrappers": cbf_positioner_wrapper,
-+    "cbfhandlewrappers": cbf_handle_wrapper,
-+    "cbfgenericwrappers": generic_wrapper,
-+}.items():
-+    print(f"Writing {name}.i")
-+    output = "\n".join(line.rstrip() for line in wrapper.get_code().splitlines())
-+    args.output.joinpath(f"{name}.i").write_text(header + output)
++open("cbfgoniometerwrappers.i","w",encoding="utf-8").write(cbf_goniometer_wrapper.get_code())
++open("cbfdetectorwrappers.i","w",encoding="utf-8").write(cbf_detector_wrapper.get_code())
++open("cbfpositionerwrappers.i","w",encoding="utf-8").write(cbf_positioner_wrapper.get_code())
++open("cbfhandlewrappers.i","w",encoding="utf-8").write(cbf_handle_wrapper.get_code())
++open("cbfgenericwrappers.i","w",encoding="utf-8").write(generic_wrapper.get_code())
  
  print("End of output from make_pycbf.py")
  print("\\end{verbatim}")
---- a/pycbf/pycbf.i
-+++ b/pycbf/pycbf.i
-@@ -1,8 +1,11 @@
- 
- /* File: pycbf.i */
- 
--// Indicate that we want to generate a module call pycbf
--%module pycbf
-+// Indicate that we want to generate a module called _wrapper
-+%module _wrapper
-+%begin %{
-+#define SWIG_PYTHON_STRICT_BYTE_CHAR
-+%}
- 
- %pythoncode %{
- __author__ = "Jon Wright <wright@esrf.fr>"
-@@ -164,70 +167,172 @@ static int convert_darray(PyObject *input, double *ptr, int size) {
-     $1 = &temp[0];
- }
- 
-+// Define an alternate str->char * input conversion
-+//
-+// This version conversion accepts both str and bytes objects, and
-+// passes them through to the CBFlib function as a char *. This is
-+// intended to make it easier to transition from SWIG_PYTHON_STRICT_BYTE_CHAR
-+%fragment("PYCBF_AsCharPtrAndSize", "header") {
-+int PYCBF_AsCharPtrAndSize(PyObject *obj, char **cptr, size_t *psize,
-+                                     int *alloc) {
-+%#if PY_VERSION_HEX >= 0x03000000
-+  if (PyBytes_Check(obj) || PyUnicode_Check(obj))
-+%#else
-+  if (PyString_Check(obj))
-+%#endif
-+  {
-+    char *cstr;
-+    Py_ssize_t len;
-+    int ret = SWIG_OK;
-+    int created_obj = 0;
-+%#if PY_VERSION_HEX >= 0x03000000
-+    // If we've been given a string, convert to bytes
-+    if(PyUnicode_Check(obj)) {
-+      if (!alloc && cptr) {
-+        /* We can't allow converting without allocation, since the internal
-+          representation of string in Python 3 is UCS-2/UCS-4 but we require
-+          a UTF-8 representation.
-+          TODO(bhy) More detailed explanation */
-+        return SWIG_RuntimeError;
-+      }
-+      obj = PyUnicode_AsUTF8String(obj);
-+      if (!obj)
-+        return SWIG_TypeError;
-+      created_obj = 1;
-+      if (alloc)
-+        *alloc = SWIG_NEWOBJ;
-+    }
-+    if (PyBytes_AsStringAndSize(obj, &cstr, &len) == -1)
-+      return SWIG_TypeError;
-+%#else
-+    if (PyString_AsStringAndSize(obj, &cstr, &len) == -1)
-+      return SWIG_TypeError;
-+%#endif
-+    // Now we have a bytes object. If we allocated it, *alloc==SWIG_NEWOBJ
-+    // ...
-+    if (cptr) {
-+      if (alloc) {
-+        if (*alloc == SWIG_NEWOBJ) {
-+          // We created a new object, so copy the memory so we own it
-+          *cptr = (char *)memcpy(malloc((len + 1) * sizeof(char)), cstr,
-+                                 sizeof(char) * (len + 1));
-+          *alloc = SWIG_NEWOBJ;
-+        } else {
-+          // We're just pointing inside the bytes object
-+          *cptr = cstr;
-+          *alloc = SWIG_OLDOBJ;
-+        }
-+      } else {
-+        // alloc hasn't been passed in - use the internal object buffer instead
-+%#if PY_VERSION_HEX >= 0x03000000
-+        assert(0); /* Should never reach here with Unicode strings in Python 3, as we must convert*/
-+%#else
-+        *cptr = SWIG_Python_str_AsChar(obj);
-+        if (!*cptr)
-+          ret = SWIG_TypeError;
-+%#endif
-+      }
-+    }
-+    // Have we asked to get the size?
-+    if (psize)
-+      *psize = len + 1;
-+%#if PY_VERSION_HEX >= 0x03000000
-+    // We might, or might not have created an object in py3 (we didn't, if python2)
-+    if (created_obj > 0) {
-+      Py_XDECREF(obj);
-+    }
-+%#endif
-+    return ret;
-+  } else {
-+    // Full SWIG does stuff here - but we aren't
-+    return SWIG_RuntimeError;
-+  }
-+  return SWIG_TypeError;
-+}
-+} // fragment end
-+
-+// Anything that is a char* or const char*, that isn't overridden
-+// by further typemaps (e.g. DATASTRING), should use our new custom
-+// conversion function.
-+%typemap(in,noblock=1,fragment="PYCBF_AsCharPtrAndSize")
-+  char * (int res, char *buf = 0, int alloc = 0),
-+  const char * (int res, char *buf = 0, int alloc = 0) {
-+  res = PYCBF_AsCharPtrAndSize($input, &buf, NULL, &alloc);
-+  if (!SWIG_IsOK(res)) {
-+    %argument_fail(res,"$type",$symname, $argnum);
-+  }
-+  $1 = %reinterpret_cast(buf, $1_ltype);
-+}
-+
-+%{  // Here is the c code needed to compile the wrappers, but not
-+    // to be wrapped
- 
--%{  // Here is the c code needed to compile the wrappers, but not 
--    // to be wrapped 
-+#include <stdbool.h>
- 
--#include "../include/cbf.h"          
--#include "../include/cbf_simple.h"
-+#include "cbf.h"
-+#include "cbf_simple.h"
- 
- // Helper functions to generate error message
-  
- 
- static int error_status = 0;
--static char error_message1[17] ;
--static char error_message[1042] ; // hope that is long enough
-+static char error_message[1024] ; // hope that is long enough
- 
- /* prototype */
- void get_error_message(void);
- 
- void get_error_message(){
--  sprintf(error_message1,"%s","CBFlib Error(s):");
-+  sprintf(error_message,"%s","CBFlib Error(s):");
-   if (error_status & CBF_FORMAT        )
--    sprintf(error_message,"%s %s",error_message1,"CBF_FORMAT       "); 
-+    sprintf(error_message,"%s %s",error_message,"CBF_FORMAT       ");
-   if (error_status & CBF_ALLOC         )
--    sprintf(error_message,"%s %s",error_message1,"CBF_ALLOC        ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_ALLOC        ");
-   if (error_status & CBF_ARGUMENT      )
--    sprintf(error_message,"%s %s",error_message1,"CBF_ARGUMENT     ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_ARGUMENT     ");
-   if (error_status & CBF_ASCII         )
--    sprintf(error_message,"%s %s",error_message1,"CBF_ASCII        ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_ASCII        ");
-   if (error_status & CBF_BINARY        )
--    sprintf(error_message,"%s %s",error_message1,"CBF_BINARY       ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_BINARY       ");
-   if (error_status & CBF_BITCOUNT      )
--    sprintf(error_message,"%s %s",error_message1,"CBF_BITCOUNT     ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_BITCOUNT     ");
-   if (error_status & CBF_ENDOFDATA     )
--    sprintf(error_message,"%s %s",error_message1,"CBF_ENDOFDATA    ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_ENDOFDATA    ");
-   if (error_status & CBF_FILECLOSE     )
--    sprintf(error_message,"%s %s",error_message1,"CBF_FILECLOSE    ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_FILECLOSE    ");
-   if (error_status & CBF_FILEOPEN      )
--    sprintf(error_message,"%s %s",error_message1,"CBF_FILEOPEN     ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_FILEOPEN     ");
-   if (error_status & CBF_FILEREAD      )
--    sprintf(error_message,"%s %s",error_message1,"CBF_FILEREAD     ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_FILEREAD     ");
-   if (error_status & CBF_FILESEEK      )
--    sprintf(error_message,"%s %s",error_message1,"CBF_FILESEEK     ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_FILESEEK     ");
-   if (error_status & CBF_FILETELL      )
--    sprintf(error_message,"%s %s",error_message1,"CBF_FILETELL     ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_FILETELL     ");
-   if (error_status & CBF_FILEWRITE     )
--    sprintf(error_message,"%s %s",error_message1,"CBF_FILEWRITE    ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_FILEWRITE    ");
-   if (error_status & CBF_IDENTICAL     )
--    sprintf(error_message,"%s %s",error_message1,"CBF_IDENTICAL    ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_IDENTICAL    ");
-   if (error_status & CBF_NOTFOUND      )
--    sprintf(error_message,"%s %s",error_message1,"CBF_NOTFOUND     ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_NOTFOUND     ");
-   if (error_status & CBF_OVERFLOW      )
--    sprintf(error_message,"%s %s",error_message1,"CBF_OVERFLOW     ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_OVERFLOW     ");
-   if (error_status & CBF_UNDEFINED     )
--    sprintf(error_message,"%s %s",error_message1,"CBF_UNDEFINED    ");
-+    sprintf(error_message,"%s %s",error_message,"CBF_UNDEFINED    ");
-   if (error_status & CBF_NOTIMPLEMENTED)
--    sprintf(error_message,"%s %s",error_message1,"CBF_NOTIMPLEMENTED");
-+    sprintf(error_message,"%s %s",error_message,"CBF_NOTIMPLEMENTED");
-   if (error_status & CBF_NOCOMPRESSION)
--    sprintf(error_message,"%s %s",error_message1,"CBF_NOCOMPRESSION");
-+    sprintf(error_message,"%s %s",error_message,"CBF_NOCOMPRESSION");
- }
- 
-+#ifdef SWIG_PYTHON_STRICT_BYTE_CHAR
-+const bool HAS_SWIG_PYTHON_STRICT_BYTE_CHAR = true;
-+#else
-+const bool HAS_SWIG_PYTHON_STRICT_BYTE_CHAR = false;
-+#endif
- 
- %} // End of code which is not wrapped but needed to compile
- 
- 
- // The actual wrappers 
- 
- // Constants needed from header files
- 
-@@ -355,3 +460,5 @@ void get_error_message(){
- // cbfhandle object
- %include "cbfhandlewrappers.i"
- 
-+%immutable;
-+extern bool HAS_SWIG_PYTHON_STRICT_BYTE_CHAR;
 --- a/pycbf/pycbf_test1.py
 +++ b/pycbf/pycbf_test1.py
-@@ -39,14 +39,11 @@ for i in range(categories):
-             typeofvalue=object.get_typeofvalue()
-             print("type:",typeofvalue)
-             if typeofvalue.find(b"bnry") > -1:
+@@ -1,67 +1,64 @@
++from sys import argv
+ 
+ import pycbf
+ object = pycbf.cbf_handle_struct() # FIXME
+-object.read_file(b"../img2cif_packed.cif",pycbf.MSG_DIGEST)
++object.read_file(argv[1].encode(),pycbf.MSG_DIGEST)
+ object.rewind_datablock()
+-print("Found",object.count_datablocks(),"blocks")
+-object.select_datablock(0)
+-print("Zeroth is named",object.datablock_name())
+-object.rewind_category()
+-categories = object.count_categories()
+-for i in range(categories):
+-    print("Category:",i, end=' ')
+-    object.select_category(i)
+-    category_name = object.category_name()
+-    print("Name:",category_name, end=' ')
+-    rows=object.count_rows()
+-    print("Rows:",rows, end=' ')
+-    cols = object.count_columns()
+-    print("Cols:",cols)
+-    loop=1
+-    object.rewind_column()
+-    while loop==1:
+-        column_name = object.column_name()
+-        print("column name \"",column_name,"\"", end=' ')
+-        try:
+-           object.next_column()
+-        except:
+-           break
+-    print
+-    for j in range(rows):
+-        object.select_row(j)
++with open(argv[2],'w',newline='\n') as f:
++    print("Found",object.count_datablocks(),"blocks",file=f)
++    object.select_datablock(0)
++    print("Zeroth is named",object.datablock_name(),file=f)
++    object.rewind_category()
++    categories = object.count_categories()
++    for i in range(categories):
++        print("Category:",i, end=' ', file=f)
++        object.select_category(i)
++        category_name = object.category_name()
++        print("Name:",category_name, end=' ', file=f)
++        rows=object.count_rows()
++        print("Rows:",rows, end=' ', file=f)
++        cols = object.count_columns()
++        print("Cols:",cols,file=f)
++        loop=1
+         object.rewind_column()
+-        if j==0: print()
+-        print("row:",j)
+-        for k in range(cols):
+-            name=object.column_name()
+-            print("col:",name, end=' ')
+-            object.select_column(k)
+-            typeofvalue=object.get_typeofvalue()
+-            print("type:",typeofvalue)
+-            if typeofvalue.find(b"bnry") > -1:
 -                print("Found the binary!!", end=' ')
-                 s=object.get_integerarray_as_string()
+-                s=object.get_integerarray_as_string()
 -                print(type(str(s)))
 -                print(dir(str(s)))
 -                print(len(str(s)))
-+                print(len(s))
-                 try:
-                    import numpy 
+-                try:
+-                   import numpy 
 -                   d = numpy.frombuffer(bytes(s),numpy.uint32)
-+                   d = numpy.frombuffer(s,numpy.uint32)
-                    # Hard wired Unsigned Int32
-                    print(d.shape)
-                    print(d[0:10],d[int(d.shape[0]/2)],d[len(d)-1])
-@@ -63,5 +60,4 @@ for i in range(categories):
-     print()
- del(object)
- #
+-                   # Hard wired Unsigned Int32
+-                   print(d.shape)
+-                   print(d[0:10],d[int(d.shape[0]/2)],d[len(d)-1])
+-                   print(d[int(d.shape[0]/3):int(d.shape[0]/3+20)])
+-                   d=numpy.reshape(d,(2300,2300))
+-#                   from matplotlib import pylab
+-#                   pylab.imshow(d,vmin=0,vmax=1000)
+-#                   pylab.show()
+-                except ImportError:
+-                   print("You need to get numpy and matplotlib to see the data")
+-            else:
+-                value=object.get_value()
+-                print("Val:",value,i)
+-    print()
+-del(object)
+-#
 -print(dir())
- #object.free_handle(handle)
+-#object.free_handle(handle)
++        while loop==1:
++            column_name = object.column_name()
++            print("column name \"",column_name,"\"", end=' ', file=f)
++            try:
++               object.next_column()
++            except:
++               break
++        for j in range(rows):
++            object.select_row(j)
++            object.rewind_column()
++            if j==0: print(file=f)
++            print("row:",j,file=f)
++            for k in range(cols):
++                name=object.column_name()
++                print("col:",name, end=' ', file=f)
++                object.select_column(k)
++                typeofvalue=object.get_typeofvalue()
++                print("type:",typeofvalue,file=f)
++                if typeofvalue.find(b"bnry") > -1:
++                    s=object.get_integerarray_as_string()
++                    print(len(s), file=f)
++                    try:
++                       import numpy
++                       d = numpy.frombuffer(bytes(s),numpy.uint32)
++                       # Hard wired Unsigned Int32
++                       print(d.shape, file=f)
++                       print(d[0:10],d[int(d.shape[0]/2)],d[len(d)-1],file=f)
++                       print(d[int(d.shape[0]/3):int(d.shape[0]/3+20)], file=f)
++                       d=numpy.reshape(d,(2300,2300))
++    #                   from matplotlib import pylab
++    #                   pylab.imshow(d,vmin=0,vmax=1000)
++    #                   pylab.show()
++                    except ImportError:
++                       print("You need to get numpy and matplotlib to see the data", file=f)
++                else:
++                    value=object.get_value()
++                    print("Val:",value,i,file=f)
++        print(file=f)
++    del(object)
++    #
++    #object.free_handle(handle)
+--- a/pycbf/pycbf_test2.py
++++ b/pycbf/pycbf_test2.py
+@@ -1,12 +1,14 @@
++from sys import argv
+ 
+ import pycbf
+ obj = pycbf.cbf_handle_struct()
+-obj.read_file(b"../adscconverted.cbf",0)
++obj.read_file(argv[1].encode(),0)
+ obj.select_datablock(0)
+ g = obj.construct_goniometer()
+-print("Rotation axis is",g.get_rotation_axis())
+-d = obj.construct_detector(0)
+-print("Beam center is",d.get_beam_center())
+-print("Detector slow axis is", d.get_detector_axis_slow())
+-print("Detector fast axis is", d.get_detector_axis_fast())
+-print("Detector axes (fast, slow) are", d.get_detector_axes_fs())
++with open(argv[2],'w',newline='\n') as f:
++    print("Rotation axis is",g.get_rotation_axis(),file=f)
++    d = obj.construct_detector(0)
++    print("Beam center is",d.get_beam_center(),file=f)
++    print("Detector slow axis is", d.get_detector_axis_slow(), file=f)
++    print("Detector fast axis is", d.get_detector_axis_fast(), file=f)
++    print("Detector axes (fast, slow) are", d.get_detector_axes_fs(), file=f)
+--- a/pycbf/pycbf_test3.py
++++ b/pycbf/pycbf_test3.py
+@@ -1,4 +1,3 @@
+-
+ import pycbf, unittest
+ class GenericTests(unittest.TestCase):
+ 
+@@ -23,4 +22,3 @@
+                            24.0)
+ if __name__=="__main__":
+     unittest.main()
+-
 --- a/pycbf/pycbf_test4.py
 +++ b/pycbf/pycbf_test4.py
-@@ -45,10 +45,7 @@ for i in range(categories):
-             typeofvalue=object.get_typeofvalue()
-             print("type:",typeofvalue)
-             if typeofvalue.find(b"bnry") > -1:
+@@ -1,102 +1,100 @@
++from sys import argv
+ 
+ # version of pycbf_test1 with write logic added
+ import pycbf
+ object = pycbf.cbf_handle_struct()
+ newobject = pycbf.cbf_handle_struct()
+-object.read_file(b"../img2cif_packed.cif",pycbf.MSG_DIGEST)
++object.read_file(argv[1].encode(),pycbf.MSG_DIGEST)
+ object.rewind_datablock()
+-print("Found",object.count_datablocks(),"blocks")
+-object.select_datablock(0)
+-print("Zeroth is named",object.datablock_name())
+-newobject.force_new_datablock(object.datablock_name());
+-object.rewind_category()
+-categories = object.count_categories()
+-for i in range(categories):
+-    print("Category:",i, end= ' ')
+-    object.select_category(i)
+-    category_name = object.category_name()
+-    print("Name:",category_name, end=' ')
+-    newobject.new_category(category_name)
+-    rows=object.count_rows()
+-    print("Rows:",rows, end=' ')
+-    cols = object.count_columns()
+-    print("Cols:",cols)
+-    loop=1
+-    object.rewind_column()
+-    while loop==1:
+-        column_name = object.column_name()
+-        print("column name \"",column_name,"\"", end=' ')
+-        newobject.new_column(column_name)
+-        try:
+-           object.next_column()
+-        except:
+-            break
+-    print()
+-    for j in range(rows):
+-        object.select_row(j)
+-        newobject.new_row()
++with open(argv[2],'w',newline='\n') as f:
++    print("Found",object.count_datablocks(),"blocks",file=f)
++    object.select_datablock(0)
++    print("Zeroth is named",object.datablock_name(),file=f)
++    newobject.force_new_datablock(object.datablock_name());
++    object.rewind_category()
++    categories = object.count_categories()
++    for i in range(categories):
++        print("Category:",i, end= ' ', file=f)
++        object.select_category(i)
++        category_name = object.category_name()
++        print("Name:",category_name, end=' ', file=f)
++        newobject.new_category(category_name)
++        rows=object.count_rows()
++        print("Rows:",rows, end=' ', file=f)
++        cols = object.count_columns()
++        print("Cols:",cols,file=f)
++        loop=1
+         object.rewind_column()
+-        print("row:",j)
+-        for k in range(cols):
+-            name=object.column_name()
+-            print("col:",name, end=' ')
+-            object.select_column(k)
+-            newobject.select_column(k)
+-            typeofvalue=object.get_typeofvalue()
+-            print("type:",typeofvalue)
+-            if typeofvalue.find(b"bnry") > -1:
 -                print("Found the binary!!",end=' ')
-                 s=object.get_integerarray_as_string()
+-                s=object.get_integerarray_as_string()
 -                print(type(s))
 -                print(dir(s))
-                 print(len(s))
-                 (compression, binaryid, elsize, elsigned, \
-                     elunsigned, elements, minelement, maxelement, \
-@@ -98,5 +95,4 @@ del(object)
- newobject.write_widefile(b"newtest1.cbf",pycbf.CBF,\
-     pycbf.MIME_HEADERS|pycbf.MSG_DIGEST|pycbf.PAD_4K,0)
- #
+-                print(len(s))
+-                (compression, binaryid, elsize, elsigned, \
+-                    elunsigned, elements, minelement, maxelement, \
+-                    byteorder,dimfast,dimmid,dimslow,padding) = \
+-                    object.get_integerarrayparameters_wdims_fs()
+-                if dimfast==0:
+-                    dimfast = 1
+-                if dimmid==0:
+-                    dimmid = 1
+-                if dimslow == 0:
+-                    dimslow = 1
+-                print("compression: ",compression)
+-                print("binaryid", binaryid)
+-                print("elsize", elsize)
+-                print("elsigned", elsigned)
+-                print("elunsigned",elunsigned)
+-                print("elements", elements)
+-                print("minelement", minelement)
+-                print("maxelement", maxelement)
+-                print("byteorder", byteorder)
+-                print("dimfast", dimfast)
+-                print("dimmid", dimmid)
+-                print("dimslow",dimslow)
+-                print("padding", padding)
+-                newobject.set_integerarray_wdims_fs(\
+-                  pycbf.CBF_BYTE_OFFSET,binaryid,s,elsize,elsigned,\
+-                  elements,byteorder,dimfast,dimmid,dimslow,padding)
+-                try:
+-                   import numpy
+-                   d = numpy.frombuffer(s,numpy.uint32)
+-                   # Hard wired Unsigned Int32
+-                   print(d.shape)
+-                   print(d[0:10],d[int(d.shape[0]/2)],d[len(d)-1])
+-                   print(d[int(d.shape[0]/3):int(d.shape[0]/3+20)])
+-                   d=numpy.reshape(d,(2300,2300))
+-#                   from matplotlib import pylab
+-#                   pylab.imshow(d,vmin=0,vmax=1000)
+-#                   pylab.show()
+-                except ImportError:
+-                   print("You need to get numpy and matplotlib to see the data")
+-            else:
+-                value=object.get_value()
+-                newobject.set_value(value)
+-                print("Val:",value,i)
+-    print()
+-del(object)
+-newobject.write_widefile(b"newtest1.cbf",pycbf.CBF,\
+-    pycbf.MIME_HEADERS|pycbf.MSG_DIGEST|pycbf.PAD_4K,0)
+-#
 -print(dir())
- #object.free_handle(handle)
---- a/pycbf/__init__.py
-+++ b/pycbf/__init__.py
-@@ -0,0 +1,4 @@
-+# Include the CBF wrapper here directly
-+from ._wrapper import *  # noqa F403
-+from ._wrapper import __version__  # noqa F401
-+from .utils import cbf2str  # noqa: F401
---- a/pycbf/utils.py
-+++ b/pycbf/utils.py
-@@ -0,0 +1,30 @@
-+from typing import Union
+-#object.free_handle(handle)
++        while loop==1:
++            column_name = object.column_name()
++            print("column name \"",column_name,"\"", end=' ', file=f)
++            newobject.new_column(column_name)
++            try:
++               object.next_column()
++            except:
++                break
++        print(file=f)
++        for j in range(rows):
++            object.select_row(j)
++            newobject.new_row()
++            object.rewind_column()
++            print("row:",j,file=f)
++            for k in range(cols):
++                name=object.column_name()
++                print("col:",name, end=' ', file=f)
++                object.select_column(k)
++                newobject.select_column(k)
++                typeofvalue=object.get_typeofvalue()
++                print("type:",typeofvalue,file=f)
++                if typeofvalue.find(b"bnry") > -1:
++                    s=object.get_integerarray_as_string()
++                    print(len(s), file=f)
++                    (compression, binaryid, elsize, elsigned, \
++                        elunsigned, elements, minelement, maxelement, \
++                        byteorder,dimfast,dimmid,dimslow,padding) = \
++                        object.get_integerarrayparameters_wdims_fs()
++                    if dimfast==0:
++                        dimfast = 1
++                    if dimmid==0:
++                        dimmid = 1
++                    if dimslow == 0:
++                        dimslow = 1
++                    print("compression: ",compression,file=f)
++                    print("binaryid", binaryid, file=f)
++                    print("elsize", elsize, file=f)
++                    print("elsigned", elsigned, file=f)
++                    print("elunsigned",elunsigned,file=f)
++                    print("elements", elements, file=f)
++                    print("minelement", minelement, file=f)
++                    print("maxelement", maxelement, file=f)
++                    print("byteorder", byteorder, file=f)
++                    print("dimfast", dimfast, file=f)
++                    print("dimmid", dimmid, file=f)
++                    print("dimslow",dimslow,file=f)
++                    print("padding", padding, file=f)
++                    newobject.set_integerarray_wdims_fs(\
++                      pycbf.CBF_BYTE_OFFSET,binaryid,s,elsize,elsigned,\
++                      elements,byteorder,dimfast,dimmid,dimslow,padding)
++                    try:
++                       import numpy
++                       d = numpy.frombuffer(s,numpy.uint32)
++                       # Hard wired Unsigned Int32
++                       print(d.shape, file=f)
++                       print(d[0:10],d[int(d.shape[0]/2)],d[len(d)-1],file=f)
++                       print(d[int(d.shape[0]/3):int(d.shape[0]/3+20)], file=f)
++                       d=numpy.reshape(d,(2300,2300))
++    #                   from matplotlib import pylab
++    #                   pylab.imshow(d,vmin=0,vmax=1000)
++    #                   pylab.show()
++                    except ImportError:
++                       print("You need to get numpy and matplotlib to see the data", file=f)
++                else:
++                    value=object.get_value()
++                    newobject.set_value(value)
++                    print("Val:",value,i,file=f)
++        print(file=f)
++    del(object)
++    newobject.write_widefile(argv[3].encode(),pycbf.CBF,\
++        pycbf.MIME_HEADERS|pycbf.MSG_DIGEST|pycbf.PAD_4K,0)
++    #
++    #object.free_handle(handle)
+--- a/pycbf/pycbf_testfelaxes.py
++++ b/pycbf/pycbf_testfelaxes.py
+@@ -1,4 +1,3 @@
+-
+ import pycbf, sys
+ from decimal import Decimal, ROUND_HALF_UP
+ 
+@@ -7,38 +6,39 @@
+ cbf = pycbf.cbf_handle_struct()
+ cbf.read_widefile(image_file, pycbf.MSG_DIGEST)
+ 
+-for element in range(64):
+-    d = cbf.construct_detector(element)
+-    print("element:", element)
+-
+-    v00 = d.get_pixel_coordinates(0, 0)
+-    v01 = d.get_pixel_coordinates(0, 1)
+-    v10 = d.get_pixel_coordinates(1, 0)
+-    v11 = d.get_pixel_coordinates(1, 1)
+-    prec = Decimal('1.000000000')
+-
+-    print('(0, 0) v00 [ %.9f %.9f %.9f ]' %(round(v00[0],9), round(v00[1],9), round(v00[2],9)))
+-    print('(0, 1) v01 [ %.9g %.9g %.9g ]' %(round(v01[0],9), round(v01[1],9), round(v01[2],9)))
+-    print('(1, 0) v10 [ %.9g %.9g %.9g ]' %(round(v10[0],9), round(v10[1],9), round(v10[2],9)))
+-    print('(1, 1) v11 [ %.9g %.9g %.9g ]' %(round(v11[0],9), round(v11[1],9), round(v11[2],9)))
+-
+-    print("surface axes:",  d.get_detector_surface_axes(0), d.get_detector_surface_axes(1))
+-
+-    print(d.get_detector_surface_axes(0), "has", cbf.count_axis_ancestors(d.get_detector_surface_axes(0)), "ancestors")
+-    print(d.get_detector_surface_axes(1), "has", cbf.count_axis_ancestors(d.get_detector_surface_axes(1)), "ancestors")
+-
+-    cur_axis = d.get_detector_surface_axes(0)
+-    count = cbf.count_axis_ancestors(cur_axis)
+-
+-    for index in range(count):
+-        print("axis", cur_axis, "index: ", index)
+-        print("    equipment", cbf.get_axis_equipment(cur_axis))
+-        print("    depends_on", cbf.get_axis_depends_on(cur_axis))
+-        print("    equipment_component", cbf.get_axis_equipment_component(cur_axis))
+-        vector = cbf.get_axis_vector(cur_axis)
+-        print("    vector [ %.8g %.8g %.8g ]" % (round(vector[0],7), round(vector[1],7), round(vector[2],7)))
+-        offset = cbf.get_axis_offset(cur_axis)
+-        print("    offset [ %.8g %.8g %.8g ]" % (round(offset[0],7), round(offset[1],7), round(offset[2],7)))
+-        print("    rotation", cbf.get_axis_rotation(cur_axis))
+-        print("    rotation_axis", cbf.get_axis_rotation_axis(cur_axis))
+-        cur_axis = cbf.get_axis_depends_on(cur_axis)
++with open(sys.argv[2],'w',newline='\n') as f:
++    for element in range(64):
++        d = cbf.construct_detector(element)
++        print("element:", element, file=f)
 +
-+import pycbf
++        v00 = d.get_pixel_coordinates(0, 0)
++        v01 = d.get_pixel_coordinates(0, 1)
++        v10 = d.get_pixel_coordinates(1, 0)
++        v11 = d.get_pixel_coordinates(1, 1)
++        prec = Decimal('1.000000000')
 +
++        print('(0, 0) v00 [ %.9f %.9f %.9f ]' %(round(v00[0],9), round(v00[1],9), round(v00[2],9)), file=f)
++        print('(0, 1) v01 [ %.9g %.9g %.9g ]' %(round(v01[0],9), round(v01[1],9), round(v01[2],9)), file=f)
++        print('(1, 0) v10 [ %.9g %.9g %.9g ]' %(round(v10[0],9), round(v10[1],9), round(v10[2],9)), file=f)
++        print('(1, 1) v11 [ %.9g %.9g %.9g ]' %(round(v11[0],9), round(v11[1],9), round(v11[2],9)), file=f)
 +
-+def cbf2str(string: Union[str, bytes]) -> str:
-+    """
-+    Convert whatever the native string return type of pycbf is, to str.
++        print("surface axes:",  d.get_detector_surface_axes(0), d.get_detector_surface_axes(1), file=f)
 +
-+    To help compatibility moving away from pycbf.SWIG_PYTHON_STRICT_BYTE_CHAR -
-+    if bytes is used strictly, then although we can accept both - return
-+    types will still be bytes, so we want to be able to convert them.
++        print(d.get_detector_surface_axes(0), "has", cbf.count_axis_ancestors(d.get_detector_surface_axes(0)), "ancestors", file=f)
++        print(d.get_detector_surface_axes(1), "has", cbf.count_axis_ancestors(d.get_detector_surface_axes(1)), "ancestors", file=f)
 +
-+    Args:
-+        string: The string-ish object returned from pycbf
-+    """
++        cur_axis = d.get_detector_surface_axes(0)
++        count = cbf.count_axis_ancestors(cur_axis)
 +
-+    if not isinstance(string, (str, bytes)):
-+        raise ValueError(f"Unrecognised pycbf string type: {type(string)}")
-+
-+    if pycbf.HAS_SWIG_PYTHON_STRICT_BYTE_CHAR:
-+        if isinstance(string, bytes):
-+            return string.decode()
-+        return string
-+
-+    if isinstance(string, bytes):
-+        # We got passed a bytes!?!? this is probably an actual data object
-+        raise ValueError("Cannot convert bytes objects - str should be native?")
-+
-+    return string
++        for index in range(count):
++            print("axis", cur_axis, "index: ", index, file=f)
++            print("    equipment", cbf.get_axis_equipment(cur_axis), file=f)
++            print("    depends_on", cbf.get_axis_depends_on(cur_axis), file=f)
++            print("    equipment_component", cbf.get_axis_equipment_component(cur_axis), file=f)
++            vector = cbf.get_axis_vector(cur_axis)
++            print("    vector [ %.8g %.8g %.8g ]" % (round(vector[0],7), round(vector[1],7), round(vector[2],7)), file=f)
++            offset = cbf.get_axis_offset(cur_axis)
++            print("    offset [ %.8g %.8g %.8g ]" % (round(offset[0],7), round(offset[1],7), round(offset[2],7)), file=f)
++            print("    rotation", cbf.get_axis_rotation(cur_axis), file=f)
++            print("    rotation_axis", cbf.get_axis_rotation_axis(cur_axis), file=f)
++            cur_axis = cbf.get_axis_depends_on(cur_axis)
