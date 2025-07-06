@@ -52,9 +52,20 @@ https://github.com/dials/cbflib/pull/98
  #include <stdint.h>
  
  #include "cbf.h"
+--- a/examples/cbf2tiff.c
++++ b/examples/cbf2tiff.c
+@@ -354,7 +354,7 @@
+           int realarray;
+           const char *byteorder;
+           size_t fastdim, middim, slowdim, padding;
+-          void * array;
++          char * array;
+           void * strip;
+           size_t elements_read;
+           int sampleperpixel=1;
 --- a/examples/cif2cbf.c
 +++ b/examples/cif2cbf.c
-@@ -473,11 +473,17 @@
+@@ -498,11 +498,17 @@
  #include <time.h>
  #include <errno.h>
  #include "cbf_getopt.h"
@@ -165,7 +176,7 @@ https://github.com/dials/cbflib/pull/98
 -#include <unistd.h>
  #include <stdint.h>
  
- #include "cbf.h"
+ #include <hdf5.h>
 --- a/examples/sauter_test.C
 +++ b/examples/sauter_test.C
 @@ -1,3 +1,4 @@
@@ -285,23 +296,6 @@ https://github.com/dials/cbflib/pull/98
  
  
  int local_exit (int status);
---- a/include/cbf.h
-+++ b/include/cbf.h
-@@ -1820,12 +1820,14 @@
- 
- int cbf_match(const char *string, char *pattern);
- 
-+#ifdef CBF_USE_PYCIFRW
-   /* Interpreter for dREL method expression */
- 
- int cbf_drel(cbf_handle handle, cbf_handle dict, 
-                                const char *mainitemname, 
-                                const char *datablock, 
-                                const char *expression);
-+#endif
- 
-   /* Construct Functions dictionary */
- 
 --- a/include/cbf_airy_disk.h
 +++ b/include/cbf_airy_disk.h
 @@ -262,11 +262,19 @@
@@ -365,6 +359,79 @@ https://github.com/dials/cbflib/pull/98
 -'
 \ No newline at end of file
 +'
+--- a/patches/cqrlib-1.1.4.patch
++++ b/patches/cqrlib-1.1.4.patch
+@@ -1,6 +1,6 @@
+ --- a/CMakeLists.txt	1970-01-01 00:00:00.000000000 +0000
+-+++ b/CMakeLists.txt	2024-05-23 18:31:38.000000000 +0000
+-@@ -0,0 +1,142 @@
+++++ b/CMakeLists.txt	2025-06-29 17:30:07.775378100 -0700
++@@ -0,0 +1,143 @@
+ +# ${CMAKE_COMMAND} -E rm was introduced in CMake 3.17.
+ +cmake_minimum_required(VERSION 3.17)
+ +project(CQRlib
+@@ -29,7 +29,8 @@
+ +# quite different from SOVERSION.
+ +option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+ +add_library(CQR
+-+  "cqrlib.c")
+++  "cqrlib.c"
+++  "cqrlib.def")
+ +set_target_properties(CQR PROPERTIES
+ +  OUTPUT_NAME "CQRlib"
+ +  PUBLIC_HEADER "cqrlib.h"
+@@ -149,6 +150,51 @@
+ +@PACKAGE_INIT@
+ +
+ +include("${CMAKE_CURRENT_LIST_DIR}/CQRlibTargets.cmake")
++--- a/cqrlib.def	1970-01-01 00:00:00.000000000 +0000
+++++ b/cqrlib.def	2025-06-29 17:45:23.969145000 -0700
++@@ -0,0 +1,42 @@
+++EXPORTS
+++	CQRAdd
+++	CQRAngles2Quaternion
+++	CQRAxis2Quaternion
+++	CQRConjugate
+++	CQRCreateEmptyQuaternion
+++	CQRCreateQuaternion
+++	CQRDist
+++	CQRDistsq
+++	CQRDivide
+++	CQRDot
+++	CQRDoublePower
+++	CQREqual
+++	CQRExp
+++	CQRFreeQuaternion
+++	CQRGetQuaternionAngle
+++	CQRGetQuaternionAxis
+++	CQRGetQuaternionIm
+++	CQRGetQuaternionW
+++	CQRGetQuaternionX
+++	CQRGetQuaternionY
+++	CQRGetQuaternionZ
+++	CQRHLERP
+++	CQRHLERPDist
+++	CQRIntegerPower
+++	CQRIntegerRoot
+++	CQRInverse
+++	CQRLog
+++	CQRMatrix2Quaternion
+++	CQRMultiply
+++	CQRNorm
+++	CQRNormsq
+++	CQRPoint2Quaternion
+++	CQRQuaternion2Angles
+++	CQRQuaternion2Matrix
+++	CQRQuaternionPower
+++	CQRRotateByQuaternion
+++	CQRSLERP
+++	CQRSLERPDist
+++	CQRScalarMultiply
+++	CQRSetQuaternion
+++	CQRSubtract
+ --- a/redirect.cmake	1970-01-01 00:00:00.000000000 +0000
+ +++ b/redirect.cmake	2024-05-23 18:31:38.000000000 +0000
+ @@ -0,0 +1,10 @@
 --- a/src/cbf.c
 +++ b/src/cbf.c
 @@ -268,10 +268,10 @@
@@ -448,22 +515,7 @@ https://github.com/dials/cbflib/pull/98
  #ifdef __cplusplus
  
  extern "C" {
-@@ -287,14 +289,6 @@
- #define realpath _cbf_realpath
- char *
- _cbf_realpath(const char *path, char *resolved_path);
--#endif
--
--#if !defined(CBF_NO_REGEX)
--#ifdef CBF_REGEXLIB_REGEX
--#include <regex.h>
--#else
--#include <pcreposix.h>
--#endif
- #endif
- 
-     static int cbf_find_array_data_h5type
-@@ -3606,7 +3600,7 @@
+@@ -3598,7 +3600,7 @@
                      error |= cbf_H5Dcreate(location,&_dataset,name,0,0,0,0,H5T_IEEE_F64LE);
                      error |= cbf_H5Dwrite2(_dataset,0,0,0,&value,H5T_NATIVE_DOUBLE);
                  } else {
@@ -472,7 +524,7 @@ https://github.com/dials/cbflib/pull/98
                      error |= cbf_H5Dread(_dataset,0,0,0,&data);
                      if (fabs(value - data)> 1.e-38+1.e-13*(fabs(value)+fabs(data))) {
                      cbf_debug_print4("Error: data doesn't match (%g vs %g) for nexus field '%s'\n",data,value,name);
-@@ -3659,7 +3653,7 @@
+@@ -3651,7 +3653,7 @@
          hid_t * dset = dataset ? dataset : &_dataset;
          found =  cbf_H5Dfind2(location,dset,name,0,0,0,H5T_IEEE_F64LE);
          if (CBF_SUCCESS==found) {
@@ -481,7 +533,7 @@ https://github.com/dials/cbflib/pull/98
              error |= cbf_H5Dread2(*dset,0,0,0,&data,H5T_NATIVE_DOUBLE);
              if (cmp(&value, &data, 1)) {
                  cbf_debug_print4("data doesn't match (%g vs %g) for nexus field '%s'\n",data,value,name);
-@@ -3723,7 +3717,7 @@
+@@ -3715,7 +3717,7 @@
          hid_t * dset = dataset ? dataset : &_dataset; /* always usable */
              found =  cbf_H5Dfind2(location,dset,name,0,0,0,H5T_IEEE_F64LE);
              if (CBF_SUCCESS==found) {
@@ -490,7 +542,7 @@ https://github.com/dials/cbflib/pull/98
              CBF_CALL2(cbf_H5Dread2(*dset,0,0,0,&data,H5T_NATIVE_DOUBLE),error);
                  if (cmp(&value, &data, 1, cmp_params)) {
                  cbf_debug_print4("data doesn't match (%g vs %g) for nexus field '%s'\n",data,value,name);
-@@ -3992,18 +3986,18 @@
+@@ -3984,18 +3986,18 @@
  
  
      /* Some error codes for use by the parsing functions - definitions should not be visible */
@@ -521,7 +573,7 @@ https://github.com/dials/cbflib/pull/98
  
      static int cbf_isblank (int c)
      {
-@@ -4613,7 +4607,7 @@
+@@ -4605,7 +4607,7 @@
          }
          if (CBF_SUCCESS==error) { /* vector */
              const hsize_t vdims[] = {3};
@@ -530,7 +582,7 @@ https://github.com/dials/cbflib/pull/98
              double matrix[3][3] = {
                  {-1.,0.0,0.0},
                  {0.0,1.0,0.0},
-@@ -19156,7 +19150,7 @@
+@@ -19171,7 +19173,7 @@
                              error |= CBF_H5ERROR;
                          } else {
                              /* check rank, allowing for multiple usable results */
@@ -539,7 +591,7 @@ https://github.com/dials/cbflib/pull/98
                              const int rank = H5Sget_simple_extent_ndims(data_space);
                              if (0==rank) {
                                  /* read the value */
-@@ -19206,7 +19200,7 @@
+@@ -19221,7 +19223,7 @@
                              error |= CBF_H5ERROR;
                          } else {
                              /* check rank, allowing for multiple usable results */
@@ -548,7 +600,7 @@ https://github.com/dials/cbflib/pull/98
                              const int rank = H5Sget_simple_extent_ndims(data_space);
                              if (0==rank) {
                                  /* read the value */
-@@ -19316,7 +19310,7 @@
+@@ -19331,7 +19333,7 @@
                                  } else {
                                      hsize_t offset[1];
                                      hsize_t count[] = {1};
@@ -557,7 +609,7 @@ https://github.com/dials/cbflib/pull/98
                                      offset[0] = dim[0]>1 ? nx->slice : 0;
                                      CBF_CALL(cbf_H5Dread2(object,offset,0,count,&value,H5T_NATIVE_DOUBLE));
                                      if (CBF_SUCCESS==error) {
-@@ -19358,7 +19352,7 @@
+@@ -19373,7 +19375,7 @@
                          } else {
                              /* check rank, allowing for multiple usable results */
                              if (0==H5Sget_simple_extent_ndims(data_space)) {
@@ -566,7 +618,7 @@ https://github.com/dials/cbflib/pull/98
                                  CBF_CALL(cbf_H5Dread2(object,0,0,0,&value,H5T_NATIVE_DOUBLE));
                                  if (CBF_SUCCESS==error) {
                                      /* convert the data to the correct units */
-@@ -19511,7 +19505,7 @@
+@@ -19526,7 +19528,7 @@
                                  } else {
                                      hsize_t offset[1];
                                      hsize_t count[] = {1};
@@ -575,7 +627,7 @@ https://github.com/dials/cbflib/pull/98
                                      offset[0] = dim[0]>1 ? nx->slice : 0;
                                      /* read the value */
                                      CBF_CALL(cbf_H5Dread2(object,offset,0,count,&value,H5T_NATIVE_DOUBLE));
-@@ -19600,7 +19594,7 @@
+@@ -19615,7 +19617,7 @@
                                  } else {
                                      hsize_t offset[1];
                                      hsize_t count[] = {1};
@@ -584,7 +636,7 @@ https://github.com/dials/cbflib/pull/98
                                      offset[0] = dim[0]>1 ? nx->slice : 0;
                                      CBF_CALL(cbf_H5Dread2(object,offset,0,count,&value,H5T_NATIVE_DOUBLE));
                                      if (CBF_SUCCESS==error) {
-@@ -19793,7 +19787,7 @@
+@@ -19808,7 +19810,7 @@
                          } else {
                              /* check rank, allowing for multiple usable results */
                              if (0==H5Sget_simple_extent_ndims(data_space)) {
@@ -593,7 +645,7 @@ https://github.com/dials/cbflib/pull/98
                                  CBF_CALL(cbf_H5Dread2(object,0,0,0,&value,H5T_NATIVE_DOUBLE));
                                  if (CBF_SUCCESS==error) {
                                      /* convert the data to the correct units */
-@@ -19826,7 +19820,7 @@
+@@ -19841,7 +19843,7 @@
                          } else {
                              /* check rank, allowing for multiple usable results */
                              if (0==H5Sget_simple_extent_ndims(data_space)) {
@@ -602,7 +654,7 @@ https://github.com/dials/cbflib/pull/98
                                  CBF_CALL(cbf_H5Dread2(object,0,0,0,&value,H5T_NATIVE_DOUBLE));
                                  if (CBF_SUCCESS==error) {
                                      /* convert the data to the correct units */
-@@ -20137,7 +20131,7 @@
+@@ -20152,7 +20154,7 @@
                              /* check rank, allowing for multiple usable results */
                              if (0==H5Sget_simple_extent_ndims(data_space)) {
                                  hid_t units = CBF_H5FAIL;
@@ -611,7 +663,7 @@ https://github.com/dials/cbflib/pull/98
                                  const char * unit_string = NULL;
                                  CBF_CALL(cbf_H5Dread2(object,0,0,0,&value,H5T_NATIVE_DOUBLE));
                                  CBF_CALL(cbf_H5Afind(object,&units,"units",CBF_H5FAIL,CBF_H5FAIL));
-@@ -20188,7 +20182,7 @@
+@@ -20203,7 +20205,7 @@
                              /* check rank, allowing for multiple usable results */
                              if (0==H5Sget_simple_extent_ndims(data_space)) {
                                  hid_t units = CBF_H5FAIL;
@@ -620,7 +672,7 @@ https://github.com/dials/cbflib/pull/98
                                  const char * unit_string = NULL;
                                  CBF_CALL(cbf_H5Dread2(object,0,0,0,&value,H5T_NATIVE_DOUBLE));
                                  CBF_CALL(cbf_H5Afind(object,&units,"units",CBF_H5FAIL,CBF_H5FAIL));
-@@ -20283,7 +20277,7 @@
+@@ -20298,7 +20300,7 @@
                              /* check rank, allowing for multiple usable results */
                              if (0==H5Sget_simple_extent_ndims(data_space)) {
                                  hid_t units = CBF_H5FAIL;
@@ -629,7 +681,7 @@ https://github.com/dials/cbflib/pull/98
                                  const char * unit_string = NULL;
                                  CBF_CALL(cbf_H5Dread2(object,0,0,0,&value,H5T_NATIVE_DOUBLE));
                                  CBF_CALL(cbf_H5Afind(object,&units,"units",CBF_H5FAIL,CBF_H5FAIL));
-@@ -20779,7 +20773,7 @@
+@@ -20794,7 +20796,7 @@
                              /* check rank, allowing for multiple usable results */
                              if (0==H5Sget_simple_extent_ndims(data_space)) {
                                  hid_t units = CBF_H5FAIL;
@@ -638,7 +690,7 @@ https://github.com/dials/cbflib/pull/98
                                  const char * unit_string = NULL;
                                  CBF_CALL(cbf_H5Dread2(object,0,0,0,&value,H5T_NATIVE_DOUBLE));
                                  CBF_CALL(cbf_H5Afind(object,&units,"units",CBF_H5FAIL,CBF_H5FAIL));
-@@ -20807,7 +20801,7 @@
+@@ -20822,7 +20824,7 @@
                              /* check rank, allowing for multiple usable results */
                              if (0==H5Sget_simple_extent_ndims(data_space)) {
                                  hid_t units = CBF_H5FAIL;
@@ -647,7 +699,7 @@ https://github.com/dials/cbflib/pull/98
                                  const char * unit_string = NULL;
                                  CBF_CALL(cbf_H5Dread2(object,0,0,0,&value,H5T_NATIVE_DOUBLE));
                                  CBF_CALL(cbf_H5Afind(object,&units,"units",CBF_H5FAIL,CBF_H5FAIL));
-@@ -20857,7 +20851,7 @@
+@@ -20872,7 +20874,7 @@
                              /* check rank, allowing for multiple usable results */
                              if (0==H5Sget_simple_extent_ndims(data_space)) {
                                  hid_t units = CBF_H5FAIL;
@@ -656,7 +708,7 @@ https://github.com/dials/cbflib/pull/98
                                  const char * unit_string = NULL;
                                  CBF_CALL(cbf_H5Dread2(object,0,0,0,&value,H5T_NATIVE_DOUBLE));
                                  CBF_CALL(cbf_H5Afind(object,&units,"units",CBF_H5FAIL,CBF_H5FAIL));
-@@ -20886,7 +20880,7 @@
+@@ -20901,7 +20903,7 @@
                              /* check rank, allowing for multiple usable results */
                              if (0==H5Sget_simple_extent_ndims(data_space)) {
                                  hid_t units = CBF_H5FAIL;
@@ -665,7 +717,7 @@ https://github.com/dials/cbflib/pull/98
                                  const char * unit_string = NULL;
                                  CBF_CALL(cbf_H5Dread2(object,0,0,0,&value,H5T_NATIVE_DOUBLE));
                                  CBF_CALL(cbf_H5Afind(object,&units,"units",CBF_H5FAIL,CBF_H5FAIL));
-@@ -20915,7 +20909,7 @@
+@@ -20930,7 +20932,7 @@
                              /* check rank, allowing for multiple usable results */
                              if (0==H5Sget_simple_extent_ndims(data_space)) {
                                  hid_t units = CBF_H5FAIL;
@@ -674,7 +726,7 @@ https://github.com/dials/cbflib/pull/98
                                  const char * unit_string = NULL;
                                  CBF_CALL(cbf_H5Dread2(object,0,0,0,&value,H5T_NATIVE_DOUBLE));
                                  CBF_CALL(cbf_H5Afind(object,&units,"units",CBF_H5FAIL,CBF_H5FAIL));
-@@ -22034,7 +22028,7 @@
+@@ -22049,7 +22051,7 @@
                      const char * _axis_set_id[3] = {NULL, NULL,NULL}; /*< always free'able */
                      const char * axis_set_id[3]; /*< always useable */
                      hsize_t pixel_offset_dim[3];
@@ -683,7 +735,7 @@ https://github.com/dials/cbflib/pull/98
                      int i;
                      pixel_offset_pat[0] = z_pixel_offset_pat;
                      pixel_offset_pat[1] = y_pixel_offset_pat;
-@@ -22096,7 +22090,7 @@
+@@ -22111,7 +22113,7 @@
                                      CBF_START_ARRAY(hsize_t, cnt, rank);
                                      size_t ir;
                                      double disp2[] = {0.,0.};
@@ -692,7 +744,7 @@ https://github.com/dials/cbflib/pull/98
                                      for (ir = 0; ir < rank; ir++) { off[ir] = 0; cnt[ir] = (ir<rank-1)?1:2;}
                                      /* extract data */
                                      CBF_CALL(cbf_H5Dread2(pixel_data,off,NULL,cnt,disp2,H5T_NATIVE_DOUBLE));
-@@ -22163,7 +22157,7 @@
+@@ -22178,7 +22180,7 @@
                                  error |= CBF_H5ERROR;
                              } else if (0==rank) {
                                  double size = 0.;
@@ -701,7 +753,7 @@ https://github.com/dials/cbflib/pull/98
                                  CBF_CALL(cbf_H5Dread2(pixel_data,NULL,NULL,NULL,&size,H5T_NATIVE_DOUBLE));
                                  if (CBF_SUCCESS==error) {
                                      /* convert the data to the correct units */
-@@ -22944,7 +22938,7 @@
+@@ -22959,7 +22961,7 @@
                                      CBF_CALL(cbf_H5Aread_string(units,&unit_string));
                                      if (!error) {
                                          /* need a conversion factor to apply to the offset before storing it */
@@ -710,7 +762,7 @@ https://github.com/dials/cbflib/pull/98
                                          if (CBF_SUCCESS!=(error|=cbf_scale_units(unit_string,"mm",&factor))) {
                                              cbf_debug_print(cbf_strerror(error));
                                          } else {
-@@ -24257,7 +24251,7 @@
+@@ -24272,7 +24274,7 @@
                  } else if (!strcmp(type,"rotation")) {
                      data = c->angle_strt + (c->angle_incr+c->angle_rstrt_incr)*key->frame_number;
                  } else {
@@ -719,7 +771,7 @@ https://github.com/dials/cbflib/pull/98
                  }
                  CBF_CALL(cbf_H5Dfind2(nx->hfile,&dset,key->axis.path[i],1,max,buf,H5T_IEEE_F64LE));
                  CBF_CALL(cbf_H5Dinsert(dset,off,0,cnt,buf,&data,H5T_NATIVE_DOUBLE));
-@@ -27739,7 +27733,7 @@
+@@ -27754,7 +27756,7 @@
          cbf_onfailnez(error |= cbf_rewind_datablock(handle), cbf_debug_print("CBF error: cannot find datablock.\n"));
          while (CBF_SUCCESS==error) {
              /* get some useful parameters out of the metadata as it's converted */
@@ -728,7 +780,7 @@ https://github.com/dials/cbflib/pull/98
  
              /* then search for the 'array_data' category */
              cbf_onfailnez(cbf_find_category(handle,"array_data"),
-@@ -27760,8 +27754,8 @@
+@@ -27775,8 +27777,8 @@
                          char * token = malloc(n*sizeof(char));
                          int newline = 1;
                          /* Numerical values for use after main parsing loop */
@@ -739,7 +791,7 @@ https://github.com/dials/cbflib/pull/98
                          /* Flags to determine what information I actually have */
                          /* Other useful values */
                          hid_t pilatusDiagnostics = CBF_H5FAIL; /* <- non-nexus group to dump some possibly useful information into */
-@@ -28009,7 +28003,7 @@
+@@ -28024,7 +28026,7 @@
                                  hsize_t offset[1];
                                  const hsize_t count[] = {1};
                                  hsize_t buf[] = {0};
@@ -748,7 +800,7 @@ https://github.com/dials/cbflib/pull/98
                                  offset[0] = h5handle->slice;
                                  CBF_CALL(_cbf_scan_pilatus_V1_2_miniheader(&token, &n, &newline, 0, &value));
                                  num = strtod(token,0);
-@@ -28029,7 +28023,7 @@
+@@ -28044,7 +28046,7 @@
                                  hsize_t offset[1];
                                  const hsize_t count[] = {1};
                                  hsize_t buf[] = {0};
@@ -757,7 +809,7 @@ https://github.com/dials/cbflib/pull/98
                                  offset[0] = h5handle->slice;
                                  CBF_CALL(_cbf_scan_pilatus_V1_2_miniheader(&token, &n, &newline, 0, &value));
                                  num = strtod(token,0);
-@@ -28043,7 +28037,7 @@
+@@ -28058,7 +28060,7 @@
                                  hid_t h5data = CBF_H5FAIL;
                                  hid_t h5location = detector;
                                  const char h5name[] = "dead_time";
@@ -766,7 +818,7 @@ https://github.com/dials/cbflib/pull/98
                                  CBF_CALL(_cbf_scan_pilatus_V1_2_miniheader(&token, &n, &newline, 0, &value));
                                  num = strtod(token,0);
                                  CBF_CALL(CBFM_H5Drequire_scalar_F64LE2(h5location,&h5data,h5name,num,cmp_double,cmp_params));
-@@ -28058,7 +28052,7 @@
+@@ -28073,7 +28075,7 @@
                                      saturation_value = _cbf_strdup(token);
                                  }
                              } else if (!cbf_cistrcmp("Threshold_setting",token)) {
@@ -775,7 +827,7 @@ https://github.com/dials/cbflib/pull/98
                                  hid_t h5data = CBF_H5FAIL;
                                  /* Get value & units */
                                  CBF_CALL(_cbf_scan_pilatus_V1_2_miniheader(&token, &n, &newline, 0, &value));
-@@ -28085,7 +28079,7 @@
+@@ -28100,7 +28102,7 @@
                                  hsize_t offset[1];
                                  const hsize_t count[] = {1};
                                  hsize_t buf[] = {0};
@@ -784,7 +836,7 @@ https://github.com/dials/cbflib/pull/98
                                  offset[0] = h5handle->slice;
                                  CBF_CALL(_cbf_scan_pilatus_V1_2_miniheader(&token, &n, &newline, 0, &value));
                                  num = strtod(token,0);
-@@ -28107,7 +28101,7 @@
+@@ -28122,7 +28124,7 @@
                                  Extract x & y positions from the header, put them into the file later.
                                  I might need to read all the header to know if I can actually convert these values to NeXus data.
                                  */
@@ -793,7 +845,7 @@ https://github.com/dials/cbflib/pull/98
                                  CBF_CALL(_cbf_scan_pilatus_V1_2_miniheader(&token, &n, &newline, 0, &value));
                                  num_x = strtod(token,0);
                                  CBF_CALL(_cbf_scan_pilatus_V1_2_miniheader(&token, &n, &newline, 0, &value));
-@@ -28126,7 +28120,7 @@
+@@ -28141,7 +28143,7 @@
                                  Either a number with some units or a random string, only do anything if it's a number.
                                  */
                                  const char * end = 0;
@@ -802,7 +854,7 @@ https://github.com/dials/cbflib/pull/98
                                  CBF_CALL(_cbf_scan_pilatus_V1_2_miniheader(&token, &n, &newline, 0, &value));
                                  num = strtod(token,(char**)(&end));
                                  if (end != token && 0.0 != num) {
-@@ -28337,7 +28331,7 @@
+@@ -28352,7 +28354,7 @@
                              /* TODO: write depends_on attributes with full paths */
                              /* Common settings */
                              const hsize_t vdims[] = {3};
@@ -811,7 +863,7 @@ https://github.com/dials/cbflib/pull/98
                              const hsize_t max[] = {H5S_UNLIMITED};
                              hsize_t buf[] = {0};
                              const hsize_t chunk[] = {1};
-@@ -28466,7 +28460,7 @@
+@@ -28481,7 +28483,7 @@
                      {
                          const double vector[] = {1.0, 0.0, 0.0};
                          const hsize_t vdims[] = {3};
@@ -820,7 +872,7 @@ https://github.com/dials/cbflib/pull/98
                          CBF_CALL(CBFM_H5Arequire_cmp2(h5axis,"vector",1,vdims,H5T_IEEE_F64LE,H5T_NATIVE_DOUBLE,
                                                           vector,vbuf,cmp_double,cmp_params));
                      }
-@@ -28523,7 +28517,7 @@
+@@ -28538,7 +28540,7 @@
                      {
                          const double vector[] = {0.0, 1.0, 0.0};
                          const hsize_t vdims[] = {3};

@@ -10,9 +10,6 @@ source:
     folder: cbflib
     sha256: 81d8ea4b75ba2cab7f94a6b20a32b8ca099405a073201776c64064b64c7a4d30
     patches:
-      - 01-off-by-one.patch
-      - 02-overrun.patch
-      - 03-binary-size-third-dimension-2D.patch
       - 04-fgetln.patch
       - 05-mkstemplate.patch
       - 06-realpath.patch
@@ -47,16 +44,17 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ stdlib('c') }}
-    - cmake      >=3.18,<5
-    - make                  # [unix]
-    - pkg-config            # [win]
+    - cmake      >=3.18
+    - cqrlib
+    - make               # [unix]
+    - pkg-config         # [win]
   host:
     - hdf5       >=1.10
     - libtiff    >=4.4
-    - pcre2                 # [win]
+    - pcre2              # [win]
   run:
     - hdf5
-    - pcre2                 # [win]
+    - pcre2              # [win]
 
 test:
   commands:
