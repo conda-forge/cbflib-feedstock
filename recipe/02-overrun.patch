@@ -1,9 +1,4 @@
-Two separate buffer overruns found with ASan, crashing
-
-  cbf2nexus -c zlib --list -o i19-1.h5 "${CBF_DATA_INPUT}/1191_00005.cbf"
-
-built with MSVC.  The omission to assign axes appears asymptomatic,
-insofar as the tests are concerned.
+https://github.com/dials/cbflib/pull/75
 --- a/src/cbf_binary.c
 +++ b/src/cbf_binary.c
 @@ -308,7 +308,7 @@

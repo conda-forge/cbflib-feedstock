@@ -1,11 +1,11 @@
-Avoid variable-length arrays; MSVC does not support them.
+https://github.com/dials/cbflib/pull/96
 --- a/examples/adscimg2cbf.c
 +++ b/examples/adscimg2cbf.c
 @@ -12,6 +12,7 @@
  #include	<stdlib.h>
  #include	<string.h>
  #include	"cbf.h"
-+#include        "cbf_alloc.h"
++#include	"cbf_alloc.h"
  #include        "cbf_string.h"
  
  /****************************************************************/
@@ -59,7 +59,7 @@ Avoid variable-length arrays; MSVC does not support them.
  #include "cbf_standardize_numbers.h"
  #include <stdio.h>
  #include <stdlib.h>
-@@ -105,7 +106,7 @@
+@@ -107,7 +108,7 @@
                  continue;
              }
              if (isdigit(c) || c == '.' || c == '-' || c == '+') {
@@ -68,7 +68,7 @@ Avoid variable-length arrays; MSVC does not support them.
                  char * endptr;
                  for (ii=0; ii < lineln; ii++) text[ii] = line[ii];
                  text[lineln] = '\0';
-@@ -137,6 +138,7 @@
+@@ -139,6 +140,7 @@
                      spacestarted = 1;
                      numcomp++;
                  }
@@ -121,7 +121,7 @@ Avoid variable-length arrays; MSVC does not support them.
  #include "cbf_hdf5.h"
  #include "unittest.h"
  
-@@ -901,8 +902,6 @@ static testResult_t testDataset_read_write(const hid_t grp)
+@@ -901,8 +902,6 @@
  	const int N2 = N*2;
  	int dataWrite0[] = {42};
  	int dataRead0[] = {0};
@@ -130,7 +130,7 @@ Avoid variable-length arrays; MSVC does not support them.
  	const int rank = 2;
  	const hsize_t offset[] = {0,0};
  	const hsize_t offset_1[] = {1,0};
-@@ -915,6 +916,9 @@
+@@ -915,6 +914,9 @@
  	const hsize_t chunk[] = {1,N2};
  	TEST(H5I_GROUP==H5Iget_type(grp));
      
@@ -140,7 +140,7 @@ Avoid variable-length arrays; MSVC does not support them.
  	{/* populate the data */
  		int i;
  		for (i = 0; i < N2; ++i) dataWrite2[i] = i*i;
-@@ -1035,6 +1039,9 @@
+@@ -1035,6 +1037,9 @@
  	if (CBF_SUCCESS!=error)
  		fprintf(stderr,"%s: Error: %s\n",__WHERE__,cbf_strerror(error));
      
@@ -152,22 +152,16 @@ Avoid variable-length arrays; MSVC does not support them.
  	cbf_H5Dfree(handle2);
 --- a/src/cbf_hdf5.c
 +++ b/src/cbf_hdf5.c
-@@ -11822,12 +11822,12 @@
+@@ -11824,7 +11824,7 @@
  
              size_t ii, rank, adim;
  
 -            double oldvec[dimension];
--
++            CBF_START_ARRAY(double, oldvec, dimension);
+ 
              CBF_UNUSED( adim );
  
-             CBF_UNUSED( attribsize );
-             
-+            CBF_START_ARRAY(double, oldvec, dimension);
-+
-             for (ii = 0; ii < dimension; ii++) oldvec[ii] = -1.e38;
- 
-             cbf_h5failneg(attribid = H5Aopen(hid, attribname, H5P_DEFAULT),CBF_H5ERROR);
-@@ -11863,6 +11863,8 @@
+@@ -11865,6 +11865,8 @@
  
              if (cbf_H5Ivalid(attribid)) H5Aclose(attribid);
  
@@ -176,7 +170,7 @@ Avoid variable-length arrays; MSVC does not support them.
              return errorcode;
  
          }
-@@ -22073,7 +22075,7 @@
+@@ -22075,7 +22077,7 @@
                                  cbf_debug_print("error: problem getting the rank of a dataset");
                                  error |= CBF_H5ERROR;
                              } else if (rank > 0) {
@@ -185,7 +179,7 @@ Avoid variable-length arrays; MSVC does not support them.
                                  if (rank != H5Sget_simple_extent_dims(data_space,dims,0)) {
                                      cbf_debug_print("error: problem getting the dimensions of a dataset");
                                      error |= CBF_H5ERROR;
-@@ -22088,8 +22090,8 @@
+@@ -22090,8 +22092,8 @@
                                       - assume that it's a uniformly spaced array of pixels in 3D space, so ignore subsequent values
                                       - store it (and dependency chain) in the key, to be converted along with other axes
                                       */
@@ -196,23 +190,18 @@ Avoid variable-length arrays; MSVC does not support them.
                                      size_t ir;
                                      double disp2[] = {0.,0.};
                                      double factor = 0./0.;
-@@ -22123,11 +22125,15 @@
+@@ -22125,7 +22127,10 @@
                                          free((void*)long_name_string);
                                          cbf_H5Afree(long_name);
                                      }
 +                                    CBF_END_ARRAY(cnt);
 +                                    CBF_END_ARRAY(off);
-+
                                  }
++                                CBF_END_ARRAY(dims);
                              } else {
                                  cbf_debug_print("error: unsupported rank of a 'pixel_offset' field");
                                  error |= CBF_NOTIMPLEMENTED;
-                             }
-+                            CBF_END_ARRAY(dims);
-                         }
-                         cbf_H5Sfree(data_space);
-                         cbf_H5Dfree(pixel_data);
-@@ -28856,7 +28862,7 @@
+@@ -28858,7 +28863,7 @@
  
                  if (type_class==H5T_STRING) {
  
@@ -221,11 +210,12 @@ Avoid variable-length arrays; MSVC does not support them.
  
                      size_t ii, jj;;
  
-@@ -28886,6 +28892,7 @@
+@@ -28888,6 +28893,8 @@
  
                      }
  
 +                    CBF_END_ARRAY(element);
++
                  } else if (type_class==H5T_INTEGER){
  
                      /* Read of a single integer or an integer array of
@@ -258,10 +248,11 @@ Avoid variable-length arrays; MSVC does not support them.
              
              if (!cbf_get_array_section_pixel_sizes(cbf,array_id,rank,psizes)) {
                  
-@@ -921,6 +923,7 @@
+@@ -921,6 +923,8 @@
                  
                  
              }
++
 +            CBF_END_ARRAY(psizes);
              
          }
