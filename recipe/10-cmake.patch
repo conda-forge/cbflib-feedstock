@@ -1,3 +1,5 @@
+https://github.com/dials/cbflib/pull/74
+https://github.com/dials/cbflib/pull/79
 --- a/examples/batch_convert_minicbf.cmake
 +++ b/examples/batch_convert_minicbf.cmake
 @@ -0,0 +1,77 @@

@@ -1,9 +1,7 @@
-mkstemp(3) implementation for MSVC.  The replacement implementation
-somewhat arbitrarily fails with EEXIST after 65536 attempts.  Note
-that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
+https://github.com/dials/cbflib/pull/95
 --- a/examples/cbf2nexus.c
 +++ b/examples/cbf2nexus.c
-@@ -257,9 +257,9 @@
+@@ -257,9 +257,10 @@
  
  #define C2CBUFSIZ 8192
  
@@ -11,12 +9,13 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
 -#define NOMKSTEMP
 -#define NOTMPDIR
 +#ifndef HAVE_MKSTEMP
++#define mkstemp _cbf_mkstemp
 +int
-+mkstemp(char *templ);
++_cbf_mkstemp(char *templ);
  #endif
  
  int local_exit (int status);
-@@ -648,26 +648,13 @@
+@@ -648,26 +649,13 @@
          
          for (f = 0; CBF_SUCCESS == error && f != cifid; ++f) {
  			cbf_handle cif = NULL;
@@ -43,7 +42,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
                  if ((ciftmpfd = mkstemp(ciftmp)) == -1 ) {
                      fprintf(stderr,"%s: Can't create temporary file %s.\n%s\n", argv[0], ciftmp,strerror(errno));
  					error |= CBF_FILEOPEN;
-@@ -675,7 +662,6 @@
+@@ -675,7 +663,6 @@
                      fprintf(stderr,"Can't open temporary file %s.\n%s\n", ciftmp,strerror(errno));
  					error |= CBF_FILEOPEN;
                  }
@@ -53,7 +52,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
                          fprintf(stderr,"Failed to write %s.\n", ciftmp);
 --- a/examples/cif2cbf.c
 +++ b/examples/cif2cbf.c
-@@ -478,9 +478,9 @@
+@@ -478,9 +478,10 @@
  #define C2CBUFSIZ 8192
  #define NUMDICTS 50
  
@@ -61,12 +60,13 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
 -#define NOMKSTEMP
 -#define NOTMPDIR
 +#ifndef HAVE_MKSTEMP
++#    define mkstemp _cbf_mkstemp
 +int
-+mkstemp(char *templ);
++_cbf_mkstemp(char *templ);
  #endif
  
  #define HDR_FINDDIMS    0x0040  /* On read, find header dims          */
-@@ -740,9 +740,7 @@
+@@ -740,9 +741,7 @@
      const char *dictionary[NUMDICTS];
      int dqrflags[NUMDICTS];
      char *ciftmp=NULL;
@@ -76,7 +76,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
      int ciftmpused;
      int padflag;
      int dimflag;
-@@ -1489,23 +1487,7 @@
+@@ -1489,23 +1488,7 @@
  
      if (!cifin || strcmp(cifin?cifin:"","-") == 0) {
          ciftmp = (char *)malloc(strlen("/tmp/cif2cbfXXXXXX")+1);
@@ -100,7 +100,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
          if ((ciftmpfd = mkstemp(ciftmp)) == -1 ) {
              fprintf(stderr,"\n cif2cbf: Can't create temporary file %s.\n", ciftmp);
              fprintf(stderr,"%s\n",strerror(errno));
-@@ -1516,7 +1498,6 @@
+@@ -1516,7 +1499,6 @@
              fprintf(stderr,"%s\n",strerror(errno));
              exit(1);
          }
@@ -110,7 +110,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
                  fprintf(stderr,"Failed to write %s.\n", ciftmp);
 --- a/examples/cif2c.c
 +++ b/examples/cif2c.c
-@@ -307,9 +307,9 @@
+@@ -307,9 +307,10 @@
  
  #define C2CBUFSIZ 8192
  
@@ -118,12 +118,13 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
 -#define NOMKSTEMP
 -#define NOTMPDIR
 +#ifndef HAVE_MKSTEMP
++#  define mkstemp _cbf_mkstemp
 +int
-+mkstemp(char *templ);
++_cbf_mkstemp(char *templ);
  #endif
  
  
-@@ -338,12 +338,7 @@
+@@ -338,12 +339,7 @@
    int errflg = 0;
    const char *cifin, *codeout, *function_name;
    char ciftmp[19];
@@ -136,7 +137,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
    int ciftmpused;
    unsigned int nbytes;
    char buf[C2CBUFSIZ];
-@@ -432,23 +427,7 @@
+@@ -432,23 +428,7 @@
      /* Read the cif */
  
     if (!cifin || strcmp(cifin?cifin:"","-") == 0) {
@@ -160,7 +161,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
       if ((ciftmpfd = mkstemp(ciftmp)) == -1 ) {
         fprintf(stderr,"Can't create temporary file %s.\n", ciftmp);
         fprintf(stderr,"%s\n",strerror(errno));
-@@ -459,7 +438,6 @@
+@@ -459,7 +439,6 @@
         fprintf(stderr,"%s\n",strerror(errno));
         exit(1);
       }
@@ -170,19 +171,20 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
           fprintf(stderr,"Failed to write %s.\n", ciftmp);
 --- a/examples/convert_image.c
 +++ b/examples/convert_image.c
-@@ -307,6 +307,11 @@
+@@ -307,6 +307,12 @@
  #include "cbf_getopt.h"
  #include <unistd.h>
  
 +#ifndef HAVE_MKSTEMP
++#  define mkstemp _cbf_mkstemp
 +int
-+mkstemp(char *templ);
++_cbf_mkstemp(char *templ);
 +#endif
 +
  
  
  double rint(double);
-@@ -524,7 +529,7 @@
+@@ -524,7 +530,7 @@
    int copt;
    int errflg = 0;
    char * imgtmp=NULL;
@@ -191,7 +193,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
    const char *imgin, *cbfout, *template, *distancestr, *alias;
    cbf_detector detector;
    char *tag, *data, *root;
-@@ -669,12 +674,13 @@
+@@ -669,12 +675,13 @@
    if (!imgin || strcmp(imgin?imgin:"","-") == 0) {
       imgtmp = (char *)malloc(strlen("/tmp/cvt_imgXXXXXX")+1);
       strcpy(imgtmp, "/tmp/cvt_imgXXXXXX");
@@ -207,7 +209,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
    }
  
      /* Read the image */
-@@ -683,7 +689,7 @@
+@@ -683,7 +690,7 @@
  
    cbf_failnez (img_read (img, imgin))
  
@@ -218,7 +220,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
         fprintf(stderr," convert_image:  Can't unlink temporary file %s.\n", imgtmp);
 --- a/examples/convert_minicbf.c
 +++ b/examples/convert_minicbf.c
-@@ -319,9 +319,9 @@
+@@ -319,9 +319,10 @@
  
  #define CVTBUFSIZ 8192
  
@@ -226,12 +228,13 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
 -#define NOMKSTEMP
 -#define NOTMPDIR
 +#ifndef HAVE_MKSTEMP
++#    define mkstemp _cbf_mkstemp
 +int
-+mkstemp(char *templ);
++_cbf_mkstemp(char *templ);
  #endif
  
  int outusage ( void );
-@@ -1845,9 +1845,7 @@
+@@ -1845,9 +1846,7 @@
      int copt;
      int errflg = 0;
      char cbfintmp[19];
@@ -241,7 +244,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
      int cbfintmpused = 0;
      char buf[CVTBUFSIZ];
      const char *cbfin, *cbfout, *template, *distancestr, *alias;
-@@ -2028,23 +2026,7 @@
+@@ -2028,23 +2027,7 @@
      
      
      if (!cbfin || strcmp(cbfin?cbfin:"","-") == 0) {
@@ -265,7 +268,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
          if ((cbfintmpfd = mkstemp(cbfintmp)) == -1 ) {
              fprintf(stderr,"\n convert_minicbf: Can't create temporary file name %s.\n", cbfintmp);
              fprintf(stderr,"%s\n",strerror(errno));
-@@ -2055,7 +2037,6 @@
+@@ -2055,7 +2038,6 @@
              fprintf(stderr,"%s\n",strerror(errno));
              exit(1);
          }
@@ -275,7 +278,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
                  fprintf(stderr,"Failed to write %s.\n", cbfintmp);
 --- a/examples/img2cif.c
 +++ b/examples/img2cif.c
-@@ -296,9 +296,9 @@
+@@ -296,9 +296,10 @@
  
  #define I2CBUFSIZ 8192
  
@@ -283,12 +286,13 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
 -#define NOMKSTEMP
 -#define NOTMPDIR
 +#ifndef HAVE_MKSTEMP
++#  define mkstemp _cbf_mkstemp
 +int
-+mkstemp(char *templ);
++_cbf_mkstemp(char *templ);
  #endif
  
  
-@@ -330,9 +330,7 @@
+@@ -330,9 +331,7 @@
    int errflg = 0;
    const char *imgin, *imgout;
    char *imgtmp=NULL;
@@ -298,7 +302,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
    int imgtmpused;
    int nbytes;
    char buf[I2CBUFSIZ];
-@@ -542,23 +540,7 @@
+@@ -542,23 +541,7 @@
    
    if (!imgin || strcmp(imgin?imgin:"","-") == 0) {
       imgtmp=(char *)malloc(strlen("/tmp/img2cifXXXXXX")+1);
@@ -322,7 +326,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
      if ((imgtmpfd = mkstemp(imgtmp)) == -1 ) {
        fprintf(stderr,"Can't create temporary file %s.\n", imgtmp);
        fprintf(stderr,"%s\n",strerror(errno));
-@@ -569,7 +551,6 @@
+@@ -569,7 +552,6 @@
        fprintf(stderr,"%s\n",strerror(errno));
        exit(1);
      }
@@ -332,7 +336,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
          fprintf(stderr,"img2cif:  Failed to write %s.\n", imgtmp);
 --- a/examples/minicbf2nexus.c
 +++ b/examples/minicbf2nexus.c
-@@ -272,9 +272,9 @@
+@@ -272,9 +272,10 @@
  
  #define C2CBUFSIZ 8192
  
@@ -340,12 +344,24 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
 -#define NOMKSTEMP
 -#define NOTMPDIR
 +#ifndef HAVE_MKSTEMP
++#define mkstemp _cbf_mkstemp
 +int
-+mkstemp(char *templ);
++_cbf_mkstemp(char *templ);
  #endif
  
  
-@@ -519,15 +519,6 @@
+@@ -508,26 +509,13 @@
+ #endif
+ 		for (f = 0; CBF_SUCCESS == error && f != cifid; ++f) {
+ 			cbf_handle cif = NULL;
+-#ifdef NOTMPDIR
+-			char ciftmp[] = "cif2cbfXXXXXX";
+-#else
+ 			char ciftmp[] = "/tmp/cif2cbfXXXXXX";
+     		int ciftmpfd;
+-#endif
+ 			/* Get suitable file - reading from stdin to a temporary file if needed */
+ 			if (!(cifin[f]) || strcmp(cifin[f]?cifin[f]:"","-") == 0) {
  				FILE *file = NULL;
  				int nbytes;
  				char buf[C2CBUFSIZ];
@@ -361,7 +377,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
                  if ((ciftmpfd = mkstemp(ciftmp)) == -1 ) {
                      fprintf(stderr,"%s: Can't create temporary file %s.\n%s\n", argv[0], ciftmp,strerror(errno));
  					error |= CBF_FILEOPEN;
-@@ -535,7 +526,6 @@
+@@ -535,7 +523,6 @@
                      fprintf(stderr,"Can't open temporary file %s.\n%s\n", ciftmp,strerror(errno));
  					error |= CBF_FILEOPEN;
                  }
@@ -385,7 +401,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
  {
 --- a/examples/sequence_match.c
 +++ b/examples/sequence_match.c
-@@ -41,9 +41,9 @@
+@@ -41,9 +41,10 @@
  #define C2CBUFSIZ 8192
  
  
@@ -393,12 +409,13 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
 -#define NOMKSTEMP
 -#define NOTMPDIR
 +#ifndef HAVE_MKSTEMP
++#    define mkstemp _cbf_mkstemp
 +int
-+mkstemp(char *templ);
++_cbf_mkstemp(char *templ);
  #endif
  
  int local_exit (int status);
-@@ -432,9 +432,7 @@
+@@ -432,9 +433,7 @@
      int numleftch, numrightch;
      int iii, jjj;
      int errflg = 0;
@@ -408,7 +425,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
      int leftintmpused, rightintmpused;
      
      const char * optarg;
-@@ -562,23 +560,7 @@
+@@ -562,23 +561,7 @@
      
      if (!leftinstr || strcmp(leftinstr?leftinstr:"","-") == 0) {
          leftintmpstr = (char *)malloc(strlen("/tmp/seqmatchlXXXXXX")+1);
@@ -432,7 +449,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
          if ((leftintmpfd = mkstemp(leftintmpstr)) == -1 ) {
              fprintf(stderr,"\n seqmatch: Can't create temporary file %s.\n", leftintmpstr);
              fprintf(stderr,"%s\n",strerror(errno));
-@@ -589,7 +571,6 @@
+@@ -589,7 +572,6 @@
              fprintf(stderr,"%s\n",strerror(errno));
              exit(1);
          }
@@ -440,7 +457,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
          while ((nbytes = fread(buf, 1, C2CBUFSIZ, stdin))) {
              if(nbytes != fwrite(buf, 1, nbytes, leftin)) {
                  fprintf(stderr,"Failed to write %s.\n", leftintmpstr);
-@@ -622,23 +603,7 @@
+@@ -622,23 +604,7 @@
      
      if (!rightinstr || strcmp(rightinstr?rightinstr:"","-") == 0) {
          rightintmpstr = (char *)malloc(strlen("/tmp/seqmatchrXXXXXX")+1);
@@ -464,7 +481,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
          if ((rightintmpfd = mkstemp(rightintmpstr)) == -1 ) {
              fprintf(stderr,"\n seqmatch: Can't create temporary file %s.\n", rightintmpstr);
              fprintf(stderr,"%s\n",strerror(errno));
-@@ -649,7 +614,6 @@
+@@ -649,7 +615,6 @@
              fprintf(stderr,"%s\n",strerror(errno));
              exit(1);
          }
@@ -483,7 +500,7 @@ that MSYS2 (UCRT64) has both mkstemp(3) and /tmp.
 +#endif
 +
 +int
-+mkstemp(char *templ)
++_cbf_mkstemp(char *templ)
 +{
 +#ifdef _WIN32
 +    char path[MAX_PATH + 1];

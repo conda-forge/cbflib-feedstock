@@ -1,7 +1,7 @@
-cbf2nexus -c zlib --list -o i03-1.h5 "${CBF_DATA_INPUT}/thaumatin_die_M1S5_1_0005_2.cbf"
+https://github.com/dials/cbflib/pull/68
 --- a/src/cbf_simple.c
 +++ b/src/cbf_simple.c
-@@ -669,7 +669,7 @@ extern "C" {
+@@ -669,7 +669,7 @@
                      
                      match = 0;
                      

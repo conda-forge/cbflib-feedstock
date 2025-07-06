@@ -6,7 +6,7 @@ package:
   version: {{ version }}
 
 source:
-  - url: https://github.com/yayahjb/cbflib/archive/refs/tags/CBFlib-{{ version }}.tar.gz
+  - url: https://github.com/dials/cbflib/archive/refs/tags/CBFlib-{{ version }}.tar.gz
     folder: cbflib
     sha256: 81d8ea4b75ba2cab7f94a6b20a32b8ca099405a073201776c64064b64c7a4d30
     patches:
@@ -23,6 +23,7 @@ source:
       - 11-cmakelist.patch
       - 12-msvc.patch
       - 13-warnings.patch
+      - 14-conda-forge.patch
   - url: http://downloads.sf.net/cbflib/CBFlib_{{ version }}_Data_Files_Input.tar.gz
     sha256: a13d6f740a12dd7380e451ce4107c0f07abd2d6795c9cb261ac5bb5f50fa680b
     folder: data-input
@@ -46,15 +47,16 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ stdlib('c') }}
-    - cmake   >=3.17,<4
-    - make               # [unix]
+    - cmake      >=3.18,<5
+    - make                  # [unix]
+    - pkg-config            # [win]
   host:
-    - hdf5    >=1.10
-    - libtiff >=4.0.5
-    - pcre               # [win]
+    - hdf5       >=1.10
+    - libtiff    >=4.4
+    - pcre2                 # [win]
   run:
     - hdf5
-    - pcre               # [win]
+    - pcre2                 # [win]
 
 test:
   commands:
