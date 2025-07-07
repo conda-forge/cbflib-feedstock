@@ -13,6 +13,6 @@ cmake ${CMAKE_ARGS}                                      \
     "${SRC_DIR}/cbflib"
 
 cmake --build .
-ctest
+test "${CONDA_BUILD_CROSS_COMPILATION}" != "1" && ctest
 cmake --install . --component Development
 cmake --install . --component Runtime
