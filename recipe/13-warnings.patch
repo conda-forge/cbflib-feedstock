@@ -12,18 +12,17 @@ https://github.com/dials/cbflib/pull/99
  
  /*
   * Write the field name starting at the position of the }
-@@ -214,7 +215,9 @@
+@@ -214,7 +215,8 @@
  /*
   * find the } marking the end of the header
   */
--  for ( hp=header; *hp != '}'; hp++); hp++;
+-  for ( hp=header; *hp != '}'; hp++); 
 +  for ( hp=header; *hp != '}'; hp++)
 +    ;
-+  hp++;
+   hp++;
  
  /*
-  * End this field with a ; and new line
-@@ -560,15 +563,15 @@
+@@ -561,15 +563,15 @@
  
  	if(NULL == (uint_data = (unsigned int *) malloc(dimension[0] * dimension[1] * sizeof (unsigned int))))
  	{
@@ -106,7 +105,62 @@ https://github.com/dials/cbflib/pull/99
      *data = slldata;
 --- a/examples/cif2cbf.c
 +++ b/examples/cif2cbf.c
-@@ -1927,8 +1927,8 @@
+@@ -2074,8 +2074,8 @@
+                                           free(newarray);
+                                         } else {
+                                           fprintf(stderr,
+-                                            "cif2cbf: Failed to allocate memory %ld bytes for rotation\n",
+-                                            (long) elsize*elements);
++                                            "cif2cbf: Failed to allocate memory %zd bytes for rotation\n",
++                                            elsize*elements);
+                                            exit(1);
+                                         }
+                                       }
+@@ -2094,8 +2094,8 @@
+                                           free(newarray);
+                                         } else {
+                                           fprintf(stderr,
+-                                            "cif2cbf: Failed to allocate memory %ld bytes for rotation",
+-                                            (long) elsize*elements);
++                                            "cif2cbf: Failed to allocate memory %zd bytes for rotation",
++                                            elsize*elements);
+                                           exit(1);
+                                         }
+                                       }
+@@ -2103,8 +2103,8 @@
+                                     free(array);
+                                   } else {
+                                     fprintf(stderr,
+-                                      "cif2cbf: Failed to allocate memory %ld bytes",
+-                                      (long) elsize*elements);
++                                      "cif2cbf: Failed to allocate memory %zd bytes",
++                                      elsize*elements);
+                                     exit(1);
+                                   }
+ 
+@@ -2189,8 +2189,8 @@
+                                                     free(newarray);
+                                                   } else {
+                                                     fprintf(stderr,
+-                                                    "\nFailed to allocate memory %ld bytes for rotation",
+-                                                    (long) elsize*elements);
++                                                    "\nFailed to allocate memory %zd bytes for rotation",
++                                                    elsize*elements);
+                                                     exit(1);
+                                                   }
+                                                 }
+@@ -2218,8 +2218,8 @@
+                                                     free(newarray);
+                                                   } else {
+                                                     fprintf(stderr,
+-                                                    "\nFailed to allocate memory %ld bytes for rotation",
+-                                                    (long) elsize*elements);
++                                                    "\nFailed to allocate memory %zd bytes for rotation",
++                                                    elsize*elements);
+                                                     exit(1);
+                                                   }
+                                                 }
+@@ -2228,8 +2228,8 @@
                                              free(array);
                                          } else {
                                              fprintf(stderr,
@@ -117,7 +171,7 @@ https://github.com/dials/cbflib/pull/99
                                              exit(1);
                                          }
                                      }
-@@ -2474,8 +2474,8 @@
+@@ -2775,8 +2775,8 @@
                                          free(array);
                                      } else {
                                          fprintf(stderr,
@@ -128,7 +182,7 @@ https://github.com/dials/cbflib/pull/99
                                          exit(1);
                                      }
                                  }
-@@ -2601,8 +2601,8 @@
+@@ -2902,8 +2902,8 @@
                                                  free(array);
                                              } else {
                                                  fprintf(stderr,
@@ -139,7 +193,7 @@ https://github.com/dials/cbflib/pull/99
                                                  exit(1);
                                              }
                                          }
-@@ -2819,8 +2819,8 @@
+@@ -3119,8 +3119,8 @@
                                          free(array);
                                      } else {
                                          fprintf(stderr,
@@ -150,7 +204,7 @@ https://github.com/dials/cbflib/pull/99
                                          exit(1);
                                      }
                                  }
-@@ -2946,8 +2946,8 @@
+@@ -3246,8 +3246,8 @@
                                                  free(array);
                                              } else {
                                                  fprintf(stderr,
@@ -328,17 +382,6 @@ https://github.com/dials/cbflib/pull/99
  #include "cbf.h"
  #include "cbf_simple.h"
  
---- a/src/cbf_codes.c
-+++ b/src/cbf_codes.c
-@@ -875,7 +875,7 @@
-                                         
-                                         cbf_failnez (cbf_write_string (outfile, "# Hexadecimal encoding"))
-                                         
--                                        sprintf (line, ", byte %lu", (unsigned long) block_count * elsize);
-+                                        sprintf (line, ", byte %zd", block_count * elsize);
-                 
-                 cbf_failnez (cbf_write_string (outfile, line))
-                 
 --- a/src/cbf_hdf5.c
 +++ b/src/cbf_hdf5.c
 @@ -1018,12 +1018,12 @@
@@ -485,7 +528,7 @@ https://github.com/dials/cbflib/pull/99
                      return cbf_configError_undefinedValue;
                  }
                  /* match depends-on -> vector OR vector -> depends-on. */
-@@ -17987,7 +17987,7 @@
+@@ -18010,7 +18010,7 @@
          buffer[0] = '\0';
  
          strncat(buffer,verstring,50);
@@ -494,7 +537,7 @@ https://github.com/dials/cbflib/pull/99
              if (svnrev[ii] == '$' || svnrev[ii] == ' ') {
                  svnrev[ii] = '\0';
              } else break;
-@@ -18016,9 +18016,9 @@
+@@ -18039,9 +18039,9 @@
              }
          }
  
@@ -506,7 +549,7 @@ https://github.com/dials/cbflib/pull/99
          strncat(buffer,svndate+idate,50);
          CBF_CALL(cbf_H5Arequire_string((*h5handle)->hfile,"creator_version", 
              buffer));
-@@ -18069,7 +18069,7 @@
+@@ -18092,7 +18092,7 @@
          buffer[0] = '\0';
  
          strncat(buffer,verstring,50);
@@ -515,7 +558,7 @@ https://github.com/dials/cbflib/pull/99
              if (svnrev[ii] == '$' || svnrev[ii] == ' ') {
                  svnrev[ii] = '\0';
              } else break;
-@@ -18098,9 +18098,9 @@
+@@ -18121,9 +18121,9 @@
              }
          }
  
@@ -527,7 +570,7 @@ https://github.com/dials/cbflib/pull/99
          strncat(buffer,svndate+idate,50);
          CBF_CALL(cbf_H5Arequire_string((*h5handle)->hfile,"creator_version",
                                         buffer));
-@@ -19264,7 +19264,7 @@
+@@ -19287,7 +19287,7 @@
                                      cbf_debug_print("invalid dimensions of dataset");
                                      error |= CBF_SIZE;
                                  } else {
@@ -536,7 +579,7 @@ https://github.com/dials/cbflib/pull/99
                                      hid_t vlstr = CBF_H5FAIL;
                                      const hid_t currType = H5Dget_type(object);
                                      hsize_t offset[1];
-@@ -22438,9 +22438,9 @@
+@@ -22461,9 +22461,9 @@
                                                  const int n = snprintf(
                                                                         _data_encoding,
                                                                         _data_encoding_size,
@@ -548,7 +591,7 @@ https://github.com/dials/cbflib/pull/99
                                                                         );
                                                  /* check if the string was formed successfully */
                                                  if (n > -1 && n < (ssize_t)_data_encoding_size) break;
-@@ -24416,9 +24416,9 @@
+@@ -24439,9 +24439,9 @@
          if (!c) {
              error |= CBF_ARGUMENT;
          } else {
@@ -560,7 +603,7 @@ https://github.com/dials/cbflib/pull/99
              if (!new_axis_id) {
                  error |= CBF_ALLOC;
              } else {
-@@ -24740,9 +24740,9 @@
+@@ -24763,9 +24763,9 @@
          if (!c) {
              error |= CBF_ARGUMENT;
              } else {
@@ -572,7 +615,7 @@ https://github.com/dials/cbflib/pull/99
              if (!new_axis_id) {
                  error |= CBF_ALLOC;
              } else {
-@@ -26835,7 +26835,7 @@
+@@ -26858,7 +26858,7 @@
                                          const char * * newAxes = NULL;
                                          /* axis id wasn't found in the set - add it */
                                          ++nAxes;
@@ -620,23 +663,6 @@ https://github.com/dials/cbflib/pull/99
              
              *dstsize += srclen;
              
---- a/src/cbf_nibble_offset.c
-+++ b/src/cbf_nibble_offset.c
-@@ -1393,11 +1393,12 @@
-                         }
-                         
-                     } else {
--                        if ((((long)delta[0]>>32)&0xFFFFFFFFL)==0x80000000L&&(((long)delta[0]&0xFFFFFFFFl)==0L)) {
-+                        int64_t ldelta = delta[0];
-+                        if (((ldelta>>32)&0xFFFFFFFFL)==0x80000000L&&((ldelta&0xFFFFFFFFL)==0L)) {
-                             prevmode=curmode;
-                             nextmode = 0;
-                         } else {
--                            if ((((long)delta[0]>>32)&0x80000000L) == 0x80000000L) {
-+                            if (((ldelta>>32)&0x80000000L) == 0x80000000L) {
-                                 delta[0] |= ~(-1L);
-                                 for (iint = 1; iint < numints; iint++) {
-                                     delta[iint] = ~(0L);
 --- a/src/img.c
 +++ b/src/img.c
 @@ -33,18 +33,6 @@

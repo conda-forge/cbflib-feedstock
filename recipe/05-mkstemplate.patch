@@ -52,7 +52,7 @@ https://github.com/dials/cbflib/pull/95
                          fprintf(stderr,"Failed to write %s.\n", ciftmp);
 --- a/examples/cif2cbf.c
 +++ b/examples/cif2cbf.c
-@@ -478,9 +478,10 @@
+@@ -503,9 +503,10 @@
  #define C2CBUFSIZ 8192
  #define NUMDICTS 50
  
@@ -66,7 +66,7 @@ https://github.com/dials/cbflib/pull/95
  #endif
  
  #define HDR_FINDDIMS    0x0040  /* On read, find header dims          */
-@@ -740,9 +741,7 @@
+@@ -824,9 +825,7 @@
      const char *dictionary[NUMDICTS];
      int dqrflags[NUMDICTS];
      char *ciftmp=NULL;
@@ -76,7 +76,7 @@ https://github.com/dials/cbflib/pull/95
      int ciftmpused;
      int padflag;
      int dimflag;
-@@ -1489,23 +1488,7 @@
+@@ -1695,23 +1694,7 @@
  
      if (!cifin || strcmp(cifin?cifin:"","-") == 0) {
          ciftmp = (char *)malloc(strlen("/tmp/cif2cbfXXXXXX")+1);
@@ -100,7 +100,7 @@ https://github.com/dials/cbflib/pull/95
          if ((ciftmpfd = mkstemp(ciftmp)) == -1 ) {
              fprintf(stderr,"\n cif2cbf: Can't create temporary file %s.\n", ciftmp);
              fprintf(stderr,"%s\n",strerror(errno));
-@@ -1516,7 +1499,6 @@
+@@ -1722,7 +1705,6 @@
              fprintf(stderr,"%s\n",strerror(errno));
              exit(1);
          }
@@ -387,7 +387,7 @@ https://github.com/dials/cbflib/pull/95
                          fprintf(stderr,"Failed to write %s.\n", ciftmp);
 --- a/examples/nexus2cbf.c
 +++ b/examples/nexus2cbf.c
-@@ -256,11 +256,6 @@
+@@ -258,11 +258,6 @@
  
  #define C2CBUFSIZ 8192
  

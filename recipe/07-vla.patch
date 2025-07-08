@@ -152,7 +152,7 @@ https://github.com/dials/cbflib/pull/96
  	cbf_H5Dfree(handle2);
 --- a/src/cbf_hdf5.c
 +++ b/src/cbf_hdf5.c
-@@ -11824,7 +11824,7 @@
+@@ -11839,7 +11839,7 @@
  
              size_t ii, rank, adim;
  
@@ -161,7 +161,7 @@ https://github.com/dials/cbflib/pull/96
  
              CBF_UNUSED( adim );
  
-@@ -11865,6 +11865,8 @@
+@@ -11880,6 +11880,8 @@
  
              if (cbf_H5Ivalid(attribid)) H5Aclose(attribid);
  
@@ -170,7 +170,7 @@ https://github.com/dials/cbflib/pull/96
              return errorcode;
  
          }
-@@ -22075,7 +22077,7 @@
+@@ -22090,7 +22092,7 @@
                                  cbf_debug_print("error: problem getting the rank of a dataset");
                                  error |= CBF_H5ERROR;
                              } else if (rank > 0) {
@@ -179,7 +179,7 @@ https://github.com/dials/cbflib/pull/96
                                  if (rank != H5Sget_simple_extent_dims(data_space,dims,0)) {
                                      cbf_debug_print("error: problem getting the dimensions of a dataset");
                                      error |= CBF_H5ERROR;
-@@ -22090,8 +22092,8 @@
+@@ -22105,8 +22107,8 @@
                                       - assume that it's a uniformly spaced array of pixels in 3D space, so ignore subsequent values
                                       - store it (and dependency chain) in the key, to be converted along with other axes
                                       */
@@ -190,7 +190,7 @@ https://github.com/dials/cbflib/pull/96
                                      size_t ir;
                                      double disp2[] = {0.,0.};
                                      double factor = 0./0.;
-@@ -22125,7 +22127,10 @@
+@@ -22140,7 +22142,10 @@
                                          free((void*)long_name_string);
                                          cbf_H5Afree(long_name);
                                      }
@@ -201,7 +201,7 @@ https://github.com/dials/cbflib/pull/96
                              } else {
                                  cbf_debug_print("error: unsupported rank of a 'pixel_offset' field");
                                  error |= CBF_NOTIMPLEMENTED;
-@@ -28858,7 +28863,7 @@
+@@ -28873,7 +28878,7 @@
  
                  if (type_class==H5T_STRING) {
  
@@ -210,7 +210,7 @@ https://github.com/dials/cbflib/pull/96
  
                      size_t ii, jj;;
  
-@@ -28888,6 +28893,8 @@
+@@ -28903,6 +28908,8 @@
  
                      }
  
@@ -221,7 +221,7 @@ https://github.com/dials/cbflib/pull/96
                      /* Read of a single integer or an integer array of
 --- a/src/cbf_minicbf_header.c
 +++ b/src/cbf_minicbf_header.c
-@@ -476,7 +476,7 @@
+@@ -510,7 +510,7 @@
          while (cbf_find_nextrow (cbf, array_id) == 0) {
              
              int i, index;
@@ -230,7 +230,7 @@ https://github.com/dials/cbflib/pull/96
              
              cbf_failnez (cbf_find_column      (cbf, "index"))
              cbf_failnez (cbf_get_integervalue (cbf, &index))
-@@ -493,6 +493,8 @@
+@@ -527,6 +527,8 @@
              cbf_failnez (cbf_get_value        (cbf, &direction[i-1]))
              
              cbf_failnez (cbf_find_column      (cbf, "array_id"))
@@ -239,7 +239,7 @@ https://github.com/dials/cbflib/pull/96
              
          }
          
-@@ -891,7 +893,7 @@
+@@ -925,7 +927,7 @@
          
          {
              
@@ -248,7 +248,7 @@ https://github.com/dials/cbflib/pull/96
              
              if (!cbf_get_array_section_pixel_sizes(cbf,array_id,rank,psizes)) {
                  
-@@ -921,6 +923,8 @@
+@@ -955,6 +957,8 @@
                  
                  
              }

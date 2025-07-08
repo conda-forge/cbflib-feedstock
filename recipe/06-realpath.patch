@@ -11,9 +11,9 @@ https://github.com/dials/cbflib/pull/93
 +_cbf_realpath(const char *path, char *resolved_path);
 +#endif
 +
- #if !defined(CBF_NO_REGEX)
- #ifdef CBF_REGEXLIB_REGEX
- #include <regex.h>
+     static int cbf_find_array_data_h5type
+     (hid_t * const type,
+      unsigned int bits,
 --- a/src/realpath.c
 +++ b/src/realpath.c
 @@ -1,6 +1,19 @@
