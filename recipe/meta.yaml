@@ -37,7 +37,7 @@ build:
     - {{ compiler('cxx') }}
     - {{ stdlib('c') }}      # [win]
     - libtiff
-  number: 0
+  number: 1
 
 requirements:
   build:
@@ -46,7 +46,7 @@ requirements:
     - {{ stdlib('c') }}
     - cmake      >=3.18
     - make               # [unix]
-    - pkg-config         # [win]
+    - pkg-config
   host:
     - cqrlib
     - hdf5       >=1.10

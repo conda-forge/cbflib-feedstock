@@ -1,6 +1,6 @@
 The pkg-config files of some conda-forge packages appear to have
-issues.  HDF5 is not found anywhere, and LibTIFF is similarly affected
-on Windows.  For now, use CMake configuration files instead.
+issues.  CQRlib does not provide pkg-config files yet and HDF5 is not
+found anywhere.  For now, use CMake configuration files instead.
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -441,21 +441,10 @@
@@ -38,18 +38,6 @@ on Windows.  For now, use CMake configuration files instead.
    find_program(_h5dump_executable h5dump REQUIRED)
 -  set(_hdf5_target PkgConfig::hdf5)
 +  set(_hdf5_target hdf5::hdf5)
- endif()
- 
- 
-@@ -599,9 +588,8 @@
-   # Use pkg-config, with the intent of eventually switching to
-   # cmake_pkg_config(), because e.g. Debian does not ship CMake config
-   # files in their dev packages.
--  find_package(PkgConfig REQUIRED)
--  pkg_check_modules(tiff REQUIRED IMPORTED_TARGET libtiff-4>=4.0.10)
--  add_library(tiff ALIAS PkgConfig::tiff)
-+  find_package(TIFF REQUIRED)
-+  add_library(tiff ALIAS TIFF::TIFF)
  endif()
  
  
