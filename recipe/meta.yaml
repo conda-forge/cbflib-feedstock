@@ -37,7 +37,7 @@ build:
     - {{ compiler('cxx') }}
     - {{ stdlib('c') }}      # [win]
     - libtiff
-  number: 2
+  number: 3
 
 requirements:
   build:
@@ -46,15 +46,21 @@ requirements:
     - {{ stdlib('c') }}
     - cmake      >=3.18
     - make               # [unix]
-    - pkg-config
+    - pkgconf
   host:
     - cqrlib
-    - hdf5       >=1.10
-    - libtiff    >=4.4
+    - hdf5
+    - libtiff
     - pcre2              # [win]
+    - ucrt               # [win]
+    - vc14_runtime       # [win]
+    - zlib               # [ppc64le]
   run:
     - hdf5
     - pcre2              # [win]
+    - ucrt               # [win]
+    - vc14_runtime       # [win]
+    - zlib               # [ppc64le]
 
 test:
   commands:
