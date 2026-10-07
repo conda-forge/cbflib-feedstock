@@ -46,7 +46,7 @@ requirements:
     - {{ stdlib('c') }}
     - cmake      >=3.18
     - make               # [unix]
-    - pkg-config
+    - pkgconf
   host:
     - cqrlib
     - hdf5
