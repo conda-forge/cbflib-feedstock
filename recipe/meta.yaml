@@ -49,8 +49,8 @@ requirements:
     - pkg-config
   host:
     - cqrlib
-    - hdf5       >=1.10
-    - libtiff    >=4.4
+    - hdf5
+    - libtiff
     - pcre2              # [win]
     - ucrt               # [win]
     - vc14_runtime       # [win]
