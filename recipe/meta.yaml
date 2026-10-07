@@ -53,12 +53,14 @@ requirements:
     - libtiff    >=4.4
     - pcre2              # [win]
     - ucrt               # [win]
-    - zlib
+    - vc14_runtime       # [win]
+    - zlib               # [ppc64le]
   run:
     - hdf5
     - pcre2              # [win]
     - ucrt               # [win]
-    - zlib
+    - vc14_runtime       # [win]
+    - zlib               # [ppc64le]
 
 test:
   commands:
