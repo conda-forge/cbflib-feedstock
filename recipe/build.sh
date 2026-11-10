@@ -14,5 +14,6 @@ cmake ${CMAKE_ARGS}                                      \
 
 cmake --build .
 test "${CONDA_BUILD_CROSS_COMPILATION}" != "1" && ctest
+test "${CONDA_BUILD_CROSS_COMPILATION}" != "1" && ctest --rerun-failed --output-on-failure
 cmake --install . --component Development
 cmake --install . --component Runtime
