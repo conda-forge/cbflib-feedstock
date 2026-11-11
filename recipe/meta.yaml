@@ -21,6 +21,7 @@ source:
       - 12-msvc.patch
       - 13-warnings.patch
       - 14-conda-forge.patch
+      - 15-linux-aarch64.patch
   - url: http://downloads.sf.net/cbflib/CBFlib_{{ version }}_Data_Files_Input.tar.gz
     sha256: a13d6f740a12dd7380e451ce4107c0f07abd2d6795c9cb261ac5bb5f50fa680b
     folder: data-input
