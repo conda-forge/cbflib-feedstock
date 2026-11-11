@@ -37,6 +37,7 @@ source:
 build:
   ignore_run_exports_from:
     - {{ compiler('cxx') }}
+    - libtiff
   number: 4
 
 requirements:

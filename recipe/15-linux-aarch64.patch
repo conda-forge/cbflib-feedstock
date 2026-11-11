@@ -11,7 +11,7 @@
  
  
      /* Check that the value is binary */
-@@ -322,7 +322,7 @@ int cbf_get_bintext (const cbf_node  *column, unsigned int row,
+@@ -322,14 +322,14 @@ int cbf_get_bintext (const cbf_node  *column, unsigned int row,
  
      /* Get the value */
  
@@ -20,3 +20,11 @@
  
  
      /* Parse it */
+ 
+   type_text = *text;
+ 
+-  sscanf (text + 1, " %x %p %lx %lx %d %24s %x %d %d %14s %lu %lu %lu %lu %lu %u",
++  sscanf ((const char *)text + 1, " %x %p %lx %lx %d %24s %x %d %d %14s %lu %lu %lu %lu %lu %u",
+                       (unsigned int *)&id_text,
+                       &file_text,
+                       (unsigned long *)&start_text,
