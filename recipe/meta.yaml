@@ -68,7 +68,7 @@ test:
     - if not exist "%LIBRARY_INC%\cbflib\\" exit 1  # [win]
 
 about:
-  home: https://github.com/yayahjb/cbflib
+  home: https://github.com/dials/cbflib
   summary: 'Functions to read and write CBF and imgCIF data files'
   description: |
     CBFlib is a library of ANSI C functions providing a simple
@@ -78,7 +78,7 @@ about:
   license_file:
     - cbflib/doc/gpl.txt
     - cbflib/doc/lgpl.txt
-  dev_url: https://github.com/yayahjb/cbflib
+  dev_url: https://github.com/dials/cbflib
 
 extra:
   recipe-maintainers:
