@@ -56,13 +56,11 @@ requirements:
     - pcre2              # [win]
     - ucrt               # [win]
     - vc14_runtime       # [win]
-    - zlib               # [ppc64le]
   run:
     - hdf5
     - pcre2              # [win]
     - ucrt               # [win]
     - vc14_runtime       # [win]
-    - zlib               # [ppc64le]
 
 test:
   commands:
