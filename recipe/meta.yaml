@@ -37,7 +37,6 @@ source:
 build:
   ignore_run_exports_from:
     - {{ compiler('cxx') }}
-    - {{ stdlib('c') }}      # [win]
     - libtiff
   number: 4
 
@@ -49,18 +48,15 @@ requirements:
     - cmake      >=3.18
     - make               # [unix]
     - pkgconf
+    - zlib               # [build_platform != target_platform]
   host:
     - cqrlib
     - hdf5
     - libtiff
     - pcre2              # [win]
-    - ucrt               # [win]
-    - vc14_runtime       # [win]
   run:
     - hdf5
     - pcre2              # [win]
-    - ucrt               # [win]
-    - vc14_runtime       # [win]
 
 test:
   commands:
