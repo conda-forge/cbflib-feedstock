@@ -1,0 +1,22 @@
+Silences warnings on `linux_aarch64` and `ppc64le`.  This should be
+folded into `13-warnings.patch`.
+--- a/src/cbf_hdf5.c
++++ b/src/cbf_hdf5.c
+@@ -18024,7 +18024,7 @@ _cbf_pilatusAxis2nexusAxisAttrs(h4data,units,depends_on,exsisItem,cmp)
+                 break;
+             }
+         }
+-        for (ii=_cbf_strlen(svndate)-1; ii >= 0; ii--) {
++        for (ii=strlen(svndate)-1; ii >= 0; ii--) {
+             if (svndate[ii] == '$' || svndate[ii] == ' ') {
+                 svndate[ii] = '\0';
+             } else break;
+@@ -18106,7 +18106,7 @@ _cbf_pilatusAxis2nexusAxisAttrs(h4data,units,depends_on,exsisItem,cmp)
+                 break;
+             }
+         }
+-        for (ii=_cbf_strlen(svndate)-1; ii >= 0; ii--) {
++        for (ii=strlen(svndate)-1; ii >= 0; ii--) {
+             if (svndate[ii] == '$' || svndate[ii] == ' ') {
+                 svndate[ii] = '\0';
+             } else break;
