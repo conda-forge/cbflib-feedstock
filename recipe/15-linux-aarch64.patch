@@ -1,0 +1,30 @@
+`char` is unsigned on `linux-aarch64`; see e.g. Love, Robert (2010)
+"Linux Kernel Development", 3rd ed., Addison-Wesley, p. 386.
+--- a/src/cbf_binary.c
++++ b/src/cbf_binary.c
+@@ -310,7 +310,7 @@ int cbf_get_bintext (const cbf_node  *column, unsigned int row,
+   
+   char byteorder_text [15];
+ 
+-  const char *text;
++  const signed char *text;
+ 
+ 
+     /* Check that the value is binary */
+@@ -322,14 +322,14 @@ int cbf_get_bintext (const cbf_node  *column, unsigned int row,
+ 
+     /* Get the value */
+ 
+-  cbf_failnez (cbf_get_columnrow (&text, column, row))
++  cbf_failnez (cbf_get_columnrow ((const char **)&text, column, row))
+ 
+ 
+     /* Parse it */
+ 
+   type_text = *text;
+ 
+-  sscanf (text + 1, " %x %p %lx %lx %d %24s %x %d %d %14s %lu %lu %lu %lu %lu %u",
++  sscanf ((const char *)text + 1, " %x %p %lx %lx %d %24s %x %d %d %14s %lu %lu %lu %lu %lu %u",
+                       (unsigned int *)&id_text,
+                       &file_text,
+                       (unsigned long *)&start_text,

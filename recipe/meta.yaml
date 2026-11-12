@@ -21,6 +21,8 @@ source:
       - 12-msvc.patch
       - 13-warnings.patch
       - 14-conda-forge.patch
+      - 15-linux-aarch64.patch
+      - 16-_cbf_strlen.patch
   - url: http://downloads.sf.net/cbflib/CBFlib_{{ version }}_Data_Files_Input.tar.gz
     sha256: a13d6f740a12dd7380e451ce4107c0f07abd2d6795c9cb261ac5bb5f50fa680b
     folder: data-input
@@ -35,9 +37,8 @@ source:
 build:
   ignore_run_exports_from:
     - {{ compiler('cxx') }}
-    - {{ stdlib('c') }}      # [win]
     - libtiff
-  number: 3
+  number: 4
 
 requirements:
   build:
@@ -52,15 +53,10 @@ requirements:
     - hdf5
     - libtiff
     - pcre2              # [win]
-    - ucrt               # [win]
-    - vc14_runtime       # [win]
-    - zlib               # [ppc64le]
+    - zlib               # [build_platform != target_platform]
   run:
     - hdf5
     - pcre2              # [win]
-    - ucrt               # [win]
-    - vc14_runtime       # [win]
-    - zlib               # [ppc64le]
 
 test:
   commands:
@@ -68,7 +64,7 @@ test:
     - if not exist "%LIBRARY_INC%\cbflib\\" exit 1  # [win]
 
 about:
-  home: https://github.com/yayahjb/cbflib
+  home: https://github.com/dials/cbflib
   summary: 'Functions to read and write CBF and imgCIF data files'
   description: |
     CBFlib is a library of ANSI C functions providing a simple
@@ -78,7 +74,7 @@ about:
   license_file:
     - cbflib/doc/gpl.txt
     - cbflib/doc/lgpl.txt
-  dev_url: https://github.com/yayahjb/cbflib
+  dev_url: https://github.com/dials/cbflib
 
 extra:
   recipe-maintainers:
